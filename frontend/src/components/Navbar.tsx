@@ -23,9 +23,7 @@ function Navbar() {
                     style={{ 
                         fontSize: '20px', 
                         paddingRight: '1rem',
-                        transition: 'color 0.2s ease-in-out'
                     }}
-                    className="hover:text-blue-500"
                 />
               </div>
               <div className="flex gap-3 text-sm">
@@ -39,22 +37,19 @@ function Navbar() {
           isLoggedIn && 
             <div className="flex items-center gap-4">
               <div className="cursor-pointer">
-                <HeartFilled 
-                    style={{ 
-                        fontSize: '20px', 
-                        paddingRight: '1rem',
-                        transition: 'color 0.2s ease-in-out'
-                    }}
-                    className="hover:text-blue-500"
-                />
+                <HeartFilled style={{ fontSize: '20px', paddingRight: '1rem' }}/>
               </div>
-              <div className="flex gap-3 text-sm pb-[3px]">
-                <span className="text-[1rem] pr-[0.5rem] font-inter cursor-pointer">Войти</span>
-                <span className="text-[1rem] pr-[1rem] mr-[2.5rem] font-inter cursor-pointer">Зарегистрироваться</span>
+              <div className="flex gap-3 text-sm">
+                <div className="cursor-pointer">
+                  <MessageOutlined style={{ fontSize: '20px', paddingRight: '1rem' }}/>
+                </div>
+                <div className="cursor-pointer">
+                  <UserOutlined style={{ fontSize: '20px', paddingRight: '2.5rem' }}/>
+                </div>
               </div>
             </div>
         }
-            
+
     </nav>
   )
 }
