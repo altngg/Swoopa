@@ -39,7 +39,7 @@ function DialoguesList() {
   return (
     <div className="w-80 bg-white rounded-lg shadow-sm">
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
+        <h2 className="text-lg font-semibold text-gray-900">Сообщения</h2>
       </div>
 
       <div className="max-h-96 overflow-y-auto">
