@@ -1,12 +1,32 @@
-import './index.css'
+//для залитой кнопки проверка
+// import React from 'react';
+// import ServiceButton from './Components/ButtonFilled';
 
-function App() {
+// function App() {
+//   return (
+//     <div className="min-h-screen bg-gray-600 p-8 flex flex-col items-center justify-center">
+//         <ServiceButton>Услуга</ServiceButton>
+//       </div>
+    
+//   );
+// }
 
-  return (
-    <h1 className="text-5xl">
-      Hello world!
-    </h1>
-  )
-}
+// export default App;
 
-export default App
+//для незалитой кнопки
+// import InvertedButton from './Components/ButtonOutline';
+
+// const App = () => {
+//   return (
+//     <div className="min-h-screen bg-gray-600 p-8 flex flex-col items-center justify-center">
+//       {/* На сером фоне будут белые кнопки */}
+//       <InvertedButton
+//         text="Товар" 
+//         className="mb-4"
+//       />
+      
+//     </div>
+//   );
+// };
+
+// export default App;
