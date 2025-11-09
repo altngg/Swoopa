@@ -30,3 +30,18 @@
 // };
 
 // export default App;
+
+//для поля ввода проверка 
+// import MessageInput from './Components/Field';
+
+// const ChatComponent = () => {
+//   return (
+//     <div className="min-h-screen bg-gray-600 p-8 flex flex-col items-center justify-center">
+//       {/* Другие компоненты чата */}
+//       <div className="fixed bottom-4 left-4 right-4">
+//         <MessageInput />
+//       </div>
+//     </div>
+//   );
+// };
+// export default ChatComponent
