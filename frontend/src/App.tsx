@@ -45,3 +45,52 @@
 //   );
 // };
 // export default ChatComponent
+
+
+
+
+// import React from 'react';
+// import ExchangeCard from './Components/ExchangeCard';
+
+// interface ExchangeItem {
+//   id: number;
+//   itemName: string;
+//   date: string;
+//   exchangeFor: string;
+//   userName: string;
+// }
+
+// const ExchangeList: React.FC = () => {
+//   const exchangeItems: ExchangeItem[] = [
+//     {
+//       id: 1,
+//       itemName: "Мока кофеварка",
+//       date: "14 ноября",
+//       exchangeFor: "Урок английского",
+//       userName: "Максим"
+//     },
+    
+//   ];
+
+//   const handleExchange = (itemId: number, userName: string) => {
+//     console.log(`Предложен обмен для товара ${itemId} с пользователем ${userName}`);
+//     // Логика предложения обмена
+//   };
+
+//   return (
+//     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+//       {exchangeItems.map((item) => (
+//         <ExchangeCard
+//           key={item.id}
+//           itemName={item.itemName}
+//           date={item.date}
+//           exchangeFor={item.exchangeFor}
+//           userName={item.userName}
+//           onExchange={() => handleExchange(item.id, item.userName)}
+//         />
+//       ))}
+//     </div>
+//   );
+// };
+
+// export default ExchangeList;
