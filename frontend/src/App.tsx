@@ -94,3 +94,47 @@
 // };
 
 // export default ExchangeList;
+
+
+
+// import React from 'react';
+// import PublicationSearch from './Components/SearchField';
+
+// const App: React.FC = () => {
+//   return (
+//     <div className="min-h-screen bg-gray-50 py-8">
+//       <div className="container mx-auto">
+//         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+//           Блог компании
+//         </h1>
+//         <PublicationSearch />
+        
+//         {/* Дополнительный контент */}
+//         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//           {/* Здесь будут карточки публикаций */}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default App;
+import React from 'react';
+import LoginInput from './Components/LoginPassword';
+
+const LoginForm: React.FC = () => {
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="bg-white p-6 rounded-lg shadow-md w-80">
+      
+        
+        {/* Использование компонента LoginInput */}
+        <LoginInput />
+        
+        
+      </div>
+    </div>
+  );
+};
+
+export default LoginForm;
