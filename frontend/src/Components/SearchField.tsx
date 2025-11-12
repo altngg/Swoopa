@@ -19,7 +19,7 @@ const PublicationSearch: React.FC = () => {
             setSearchQuery(e.target.value)
           }
           placeholder="Поиск по публикациям..."
-          className="w-full px-[0.7rem] py-[0.5rem] text-[18px] border-[1px] border-gray-300 rounded-2xl 
+          className="w-full px-[0.7rem] py-[0.5rem] text-[18px] border-[1px] border-gray-300 rounded-md 
                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                    shadow-sm hover:shadow-md transition-shadow duration-200
                    placeholder-gray-400 text-gray-700 font-regular"
