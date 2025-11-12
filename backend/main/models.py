@@ -22,15 +22,16 @@ class Status(models.Model):
 
 
 class Publication(models.Model):
-    name = models.CharField(max_length=10)
-    slug = models.CharField(max_length=10, unique=True)
-    price = models.CharField()
+    name = models.CharField()
+    slug = models.CharField(unique=True)
+    price = models.CharField(blank=True)
     description = models.TextField(blank=True)
     main_image = models.ImageField(upload_to='publications/main/')
     created_at = models.DateTimeField(auto_now_add=True)
+    location = models.CharField(max_length=100) # сделать так, чтобы при создании карточки локация бралась из локации автора
 
     publication_type = models.ForeignKey(PublicationType, on_delete=models.CASCADE, related_name='publications_type')
-    status = models.ForeignKey(PublicationType, on_delete=models.CASCADE, related_name='publications_status')
+    status = models.ForeignKey(Status, on_delete=models.CASCADE, related_name='publications_status')
     # author
 
     def save(self, *args, **kwargs):
