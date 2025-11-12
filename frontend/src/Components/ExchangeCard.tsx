@@ -61,7 +61,7 @@ const ExchangeCard: React.FC<ExchangeCardProps> = ({
       <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
         <button
           onClick={handleExchange}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-blue-500 active:bg-blue-400 active:border-blue-800 focus:ring-offset-2"
         >
           Предложить обмен
         </button>
