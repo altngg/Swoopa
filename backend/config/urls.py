@@ -21,8 +21,9 @@ Including another URLconf
 """
 
 urlpatterns = [
-    path('', include('users.urls')),
     path('admin/', admin.site.urls),
+    path('', include('users.urls')),
+    path('main/', include('main.urls'))
 ]
 
 if settings.DEBUG:
