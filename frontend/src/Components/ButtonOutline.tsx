@@ -15,25 +15,25 @@ const InvertedButton: React.FC<InvertedButtonProps> = ({
     <button
       onClick={onClick}
       className={`
-        w-[20rem]
-        px-4
-        py-2
+        py-[0.25rem]          
+        px-[2rem]  
+        text-[14px]
         bg-transparent
-        border-2
+        border-[1px]
         border-current
         rounded-full
-        text-current
         font-medium
-        transition-all
-        duration-200
-        hover:opacity-80
-        active:opacity-60
-        focus:outline-none
-        focus:ring-2
-        focus:ring-current
-        focus:ring-opacity-50
-        text-base
-        leading-normal
+        transition-all             
+        duration-200               
+        hover:bg-gray-100          
+        hover:border-gray-100      
+        active:bg-gray-200         
+        active:border-gray-800     
+        focus:outline-none        
+        focus:ring-2               
+        focus:ring-gray-400       
+        focus:ring-opacity-50                  
+        leading-normal    
         ${className}
       `}
     >

@@ -25,16 +25,13 @@ const ServiceButton: React.FC<ServiceButtonProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`
-        w-[20rem]                   
-        px-4                        
-        py-2                       
-        bg-white                   
-        border-2                   
-        border-gray-600            
-        ${roundedClass}            
-        text-gray-600              
+      className={`        
+        py-[0.25rem]          
+        px-[2rem]                                               
+        bg-[#C4C4C4]     
+        ${roundedClass}                        
         font-medium                
+        text-[14px]
         transition-all             
         duration-200               
         hover:bg-gray-100          
@@ -44,14 +41,10 @@ const ServiceButton: React.FC<ServiceButtonProps> = ({
         focus:outline-none        
         focus:ring-2               
         focus:ring-gray-400       
-        focus:ring-opacity-50      
-        text-base                  
+        focus:ring-opacity-50                  
         leading-normal             
         ${className}               
       `}
-      style={{
-        fontSize: '1rem',          
-      }}
     >
       {children}
     </button>
