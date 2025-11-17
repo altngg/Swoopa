@@ -33,12 +33,12 @@ const ItemPreview = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="px-[20rem] py-0">
       {/* Основной контейнер с ограничением ширины как у поиска */}
       <div className="w-full">
         
         {/* Верхняя часть: галерея и информация */}
-        <div className="flex gap-[10rem] mb-12">
+        <div className="flex gap-[5rem] mb-12">
           
           {/* Галерея слева */}
           <div className="flex-1">

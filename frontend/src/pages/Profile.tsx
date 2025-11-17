@@ -22,10 +22,10 @@ const Profile = () => {
     ];
 
   return (
-    <div className="px-[14rem] py-0">
+    <div className="px-[11rem] py-0">
       <div className="w-full mx-auto">
         {/* Шапка профиля */}
-        <div className="flex items-center gap-8 mb-12">
+        <div className="flex items-center gap-8 mb-12 ml-[2em]">
           {/* Аватар 133x133px */}
           <div 
             className="w-[8rem] h-[8rem] rounded-full bg-gray-200 flex items-center justify-center"
@@ -61,15 +61,13 @@ const Profile = () => {
           
                     <div className="
                     grid 
-                    grid-cols-1 
-                    xs:grid-cols-1 xs:  xs: 
-                    sm:grid-cols-1 sm: sm: 
-                    md:grid-cols-2 md: md: 
-                    lg:grid-cols-3 lg: lg:
-                    xl:grid-cols-6 xl: xl:
+                    grid-cols-2 
+                    sm:grid-cols-3 
+                    md:grid-cols-4 
+                    lg:grid-cols-5 
+                    xl:grid-cols-6 
                     gap-4 
                     lg:gap-6
-                    overflow-y-auto
                     ">
                         {allItems.map((item) => (
                             <ItemCard 

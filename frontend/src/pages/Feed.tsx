@@ -26,15 +26,13 @@ const Feed = () => {
         {/* Адаптивная сетка */}
         <div className="
           grid 
-          grid-cols-1 
-          xs:grid-cols-1 xs:  xs: 
-          sm:grid-cols-1 sm: sm: 
-          md:grid-cols-2 md: md: 
-          lg:grid-cols-3 lg: lg:
-          xl:grid-cols-6 xl: xl:
+          grid-cols-2 
+          sm:grid-cols-3 
+          md:grid-cols-4 
+          lg:grid-cols-5 
+          xl:grid-cols-6 
           gap-4 
           lg:gap-6
-          overflow-y-auto
         ">
           {items.map((item) => (
             <ItemCard 
