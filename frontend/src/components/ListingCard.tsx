@@ -1,44 +1,16 @@
 import '../index.css'
-import { useNavigate } from 'react-router-dom';
-import type { ListingCardProps } from '../types';
 
-function ListingCard({ 
-  itemId, 
-  title = 'title', 
-  exchangeItem = 'exchangeItem', 
-  isEditable = false,
-  onDelete,
-  onEdit 
-}: ListingCardProps) {
-  const navigate = useNavigate();
+interface ListingCardProps {
+  title?: string;
+  exchangeItem?: string;
+}
 
-  const handleCardClick = () => {
-    if (isEditable && onEdit) {
-      onEdit(itemId);
-    } else {
-      navigate(`/item/${itemId}`);
-    }
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onDelete) {
-      onDelete(itemId);
-    }
-  };
-
-  const handleOpenChat = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate('/user-account/messages');
-  };
-
+function ListingCard({ title = 'title', exchangeItem = 'exchangeItem' }: ListingCardProps) {
   return (
-    <div 
-      className="w-[40em] flex gap-4 p-4 rounded-lg shadow-sm cursor-pointer"
-      onClick={handleCardClick}
-    >
+    <div className="w-[50em] flex gap-4 p-4 rounded-lg shadow-sm">
+      {/* Картинка 164x164px */}
       <div 
-        className="flex-shrink-0 w-[6rem] h-20 rounded bg-[#C4C4C4]"
+        className="flex-shrink-0 w-[10.25rem] h-[10.25rem] rounded bg-[#C4C4C4]"
         style={{ backgroundColor: '#C4C4C4' }}
       />
 
@@ -55,27 +27,23 @@ function ListingCard({
               Максим
             </p>
           </div>
-          {isEditable && (
-            <button
-              className="flex-shrink-0 ml-2 text-red-500 hover:text-red-700 text-sm font-medium"
-              onClick={handleDelete}
-            >
-              Удалить
-            </button>
-          )}
+          <button
+            className="flex-shrink-0 ml-2 text-red-500 hover:text-red-700 text-sm font-medium"
+          >
+            Удалить
+          </button>
         </div>
 
         <div className="mt-auto flex justify-end">
           <button
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium"
-            onClick={handleOpenChat}
           >
             Открыть чат
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default ListingCard;

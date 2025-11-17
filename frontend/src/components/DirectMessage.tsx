@@ -1,14 +1,17 @@
-import { Avatar } from 'antd'
-import '../index.css'
+import { Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 
-function DirectMessage () {
+interface DirectMessageProps {
+  message: string;
+  isCurrentUser: boolean;
+  time: string;
+  userName: string;
+}
 
-    const isCurrentUser = false;
-
-    return (
+function DirectMessage({ message, isCurrentUser, time, userName }: DirectMessageProps) {
+  return (
     <div className={`flex gap-3 mb-4 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-      {/* Profile Picture for received messages */}
+      {/* Аватар для полученных сообщений */}
       {!isCurrentUser && (
         <div className="flex-shrink-0">
           <Avatar 
@@ -19,18 +22,18 @@ function DirectMessage () {
         </div>
       )}
 
-      {/* Message Content Container */}
+      {/* Контейнер контента сообщения */}
       <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[80%]`}>
-        {/* Sender Name */}
+        {/* Имя отправителя */}
         {!isCurrentUser && (
           <div className="text-sm text-gray-600 mb-1 ml-1">
-            Max
+            {userName}
           </div>
         )}
 
-        {/* Message Bubble Container */}
+        {/* Контейнер пузыря сообщения */}
         <div className="flex flex-col">
-          {/* Message Bubble */}
+          {/* Пузырь сообщения */}
           <div
             className={`
               inline-block px-4 py-2 rounded-2xl border max-w-full w-fit
@@ -40,17 +43,17 @@ function DirectMessage () {
               }
             `}
           >
-            <p className="text-sm m-0 break-words whitespace-pre-wrap">Alo nu kak tam s dengami</p>
+            <p className="text-sm m-0 break-words whitespace-pre-wrap">{message}</p>
           </div>
 
-          {/* Timestamp */}
+          {/* Время */}
           <div className={`text-xs text-gray-500 mt-1 ${isCurrentUser ? 'text-right mr-1' : 'text-left ml-1'}`}>
-            4:20
+            {time}
           </div>
         </div>
       </div>
 
-      {/* Profile Picture for sent messages */}
+      {/* Аватар для отправленных сообщений */}
       {isCurrentUser && (
         <div className="flex-shrink-0">
           <Avatar 
