@@ -17,12 +17,12 @@ function ItemCard({ itemId, title = 'Название товара', exchangeIte
 
   return (
     <div 
-      className="w-[12rem] flex flex-col gap-2 p-3 rounded-lg cursor-pointer"
+      className="w-[18rem] flex flex-col gap-2 p-4 pl-0 pt-0 rounded-lg cursor-pointer"
       onClick={handleCardClick}
     >
       <div className="relative">
         <div 
-          className="w-full h-40 rounded bg-[#C4C4C4]"
+          className="w-full h-[16rem] rounded bg-[#C4C4C4]"
           style={{ backgroundColor: '#C4C4C4' }}
         />
         <button 

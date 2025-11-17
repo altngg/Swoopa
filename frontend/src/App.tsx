@@ -7,12 +7,14 @@ import UserAccount from './pages/UserAccount';
 import ItemPreview from './pages/ItemPreview';
 import CreatePost from './pages/CreatePost';
 import Profile from './pages/Profile';
+import SearchField from './components/SearchField';
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Navbar />
+        <SearchField />
         <Routes>
           <Route path="/" element={<Feed />} />
           <Route path="/feed" element={<Feed />} />
