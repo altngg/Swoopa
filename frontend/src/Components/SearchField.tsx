@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
 
-const PublicationSearch: React.FC = () => {
+const SearchField: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Search query:', searchQuery);
+    
+    // Сохраняем состояние поиска
+    const event = new CustomEvent('searchPerformed', { 
+      detail: { query: searchQuery, isActive: !!searchQuery.trim() } 
+    });
+    window.dispatchEvent(event);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -15,9 +25,7 @@ const PublicationSearch: React.FC = () => {
         <input
           type="text"
           value={searchQuery}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-            setSearchQuery(e.target.value)
-          }
+          onChange={handleInputChange}
           placeholder="Поиск по публикациям..."
           className="w-full px-[0.7rem] py-[0.5rem] text-[18px] border-[1px] border-gray-300 rounded-3xl 
                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
@@ -37,4 +45,4 @@ const PublicationSearch: React.FC = () => {
   );
 };
 
-export default PublicationSearch;
+export default SearchField;
