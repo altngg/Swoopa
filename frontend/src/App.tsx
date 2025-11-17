@@ -121,18 +121,26 @@
 // export default App;
 import React from 'react';
 import LoginInput from './Components/LoginPassword';
+import ButtonFilled from './Components/ButtonFilled';
+import ExchangeCard from './Components/ExchangeCard';
+import Field from './Components/Field';
+import ButtonOutline from './Components/ButtonOutline';
+import SearchField from './Components/SearchField';
 
 const LoginForm: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white p-6 rounded-lg shadow-md w-80">
+    <div className="min-h-screen">
       
         
         {/* Использование компонента LoginInput */}
         <LoginInput />
+        <ButtonFilled />
+        <ButtonOutline text={'Товар'} />
+        <ExchangeCard itemName={''} date={''} exchangeFor={''} userName={''} />
+        <Field />
+        <SearchField />
         
         
-      </div>
     </div>
   );
 };
