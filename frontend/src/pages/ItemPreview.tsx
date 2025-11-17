@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { HeartOutlined, HeartFilled } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import Gallery from '../components/Gallery';
 import ButtonFilled from '../components/ButtonFilled';
 // import ExchangeCard from '../components/ExchangeCard';
 
 const ItemPreview = () => {
+  const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
   const [showExchangeCard, setShowExchangeCard] = useState(false);
 
@@ -23,6 +25,11 @@ const ItemPreview = () => {
 
   const handleExchangeClick = () => {
     setShowExchangeCard(!showExchangeCard);
+  };
+
+  
+  const handleUserClick = () => {
+    navigate('/profile');
   };
 
   return (
@@ -68,8 +75,10 @@ const ItemPreview = () => {
               <p className="text-[1.25rem] text-gray-900 mb-1">
                 Обмен на {itemData.exchangeFor}
               </p>
-              <p className="text-[1.25rem] text-gray-600">
+              <p className="text-[1.25rem] text-gray-600"
+               onClick={handleUserClick} >
                 {itemData.userName}
+                
               </p>
             </div>
             

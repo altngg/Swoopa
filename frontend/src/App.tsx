@@ -14,7 +14,6 @@ function App() {
     <Router>
       <div className="App">
         <Navbar />
-        <div className="min-w-[80rem] max-w-4xl mx-auto">
           <SearchField />
           <Routes>
             <Route path="/" element={<Feed />} />
@@ -25,9 +24,7 @@ function App() {
             <Route path="/item/:id" element={<ItemPreview />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/profile" element={<Profile />} />
-          </Routes>
-        </div>
-        
+          </Routes>      
       </div>
     </Router>
   );
