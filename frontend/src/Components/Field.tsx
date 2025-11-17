@@ -10,7 +10,7 @@ const MessageInput = () => {
     }
   };
 
-  const handleKeyPress = (e: { key: string; shiftKey: any; preventDefault: () => void; }) => {
+  const handleKeyPress = (e: { key: string; shiftKey: unknown; preventDefault: () => void; }) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
