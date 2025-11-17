@@ -14,17 +14,20 @@ function App() {
     <Router>
       <div className="App">
         <Navbar />
-        <SearchField />
-        <Routes>
-          <Route path="/" element={<Feed />} />
-          <Route path="/feed" element={<Feed />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/user-account" element={<UserAccount initialTab="ads" />} />
-          <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
-          <Route path="/item/:id" element={<ItemPreview />} />
-          <Route path="/create-post" element={<CreatePost />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
+        <div className="min-w-[80rem] max-w-4xl mx-auto">
+          <SearchField />
+          <Routes>
+            <Route path="/" element={<Feed />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/user-account" element={<UserAccount initialTab="ads" />} />
+            <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
+            <Route path="/item/:id" element={<ItemPreview />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </div>
+        
       </div>
     </Router>
   );

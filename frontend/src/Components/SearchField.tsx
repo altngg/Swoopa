@@ -20,7 +20,7 @@ const SearchField: React.FC = () => {
   };
 
   return (
-    <div className="min-w-[80rem] max-w-4xl mx-auto p-4">
+    <div className="min-w-[80rem] max-w-4xl mx-auto mb-[3rem]">
       <form onSubmit={handleSearch} className="relative">
         <input
           type="text"

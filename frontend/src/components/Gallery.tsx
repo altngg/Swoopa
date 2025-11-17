@@ -18,7 +18,7 @@ function Gallery () {
       )}
 
       {/* Photo Container */}
-      <div className="w-[25em] h-[25em] h-48 bg-gray-300 rounded-lg flex items-center justify-center">
+      <div className="w-[35em] h-[35em] h-48 bg-gray-300 rounded-lg flex items-center justify-center">
         {/* {hasPhotos ? (
           <img 
             src={photos[currentIndex]} 

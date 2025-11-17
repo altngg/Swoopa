@@ -26,7 +26,7 @@ const ServiceButton: React.FC<ServiceButtonProps> = ({
     <button
       onClick={onClick}
       className={`        
-        py-[0.25rem]          
+        py-[0.5rem]          
         px-[2rem]                                               
         bg-[#C4C4C4]     
         ${roundedClass}                        
