@@ -23,7 +23,6 @@ function App() {
             <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
             <Route path="/item/:id" element={<ItemPreview />} />
             <Route path="/add-post" element={<AddPost />} />
-            <Route path="/create-post" element={<CreatePost />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>      
       </div>
