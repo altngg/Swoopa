@@ -5,7 +5,6 @@ import Feed from './pages/Feed';
 import Favorites from './pages/Favorites';
 import UserAccount from './pages/UserAccount';
 import ItemPreview from './pages/ItemPreview';
-import CreatePost from './pages/CreatePost';
 import Profile from './pages/Profile';
 import SearchField from './components/SearchField';
 import AddPost from './pages/AddPost';
