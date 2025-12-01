@@ -8,6 +8,7 @@ import ItemPreview from './pages/ItemPreview';
 import CreatePost from './pages/CreatePost';
 import Profile from './pages/Profile';
 import SearchField from './components/SearchField';
+import AddPost from './pages/AddPost';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/user-account" element={<UserAccount initialTab="ads" />} />
             <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
             <Route path="/item/:id" element={<ItemPreview />} />
+            <Route path="/add-post" element={<AddPost />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>      

@@ -152,7 +152,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900">Личный кабинет</h1>
+      <h1 className="text-2xl font-bold mb-6 text-gray-900 pl-[2rem]">Личный кабинет</h1>
       
       <div className="flex gap-6">
         {/* Левая панель с профилем */}
@@ -288,7 +288,15 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
         <div className="flex-1">
           {activeTab === 'ads' && (
             <div>
-              <h2 className="text-xl font-semibold mb-4 text-gray-900">Мои объявления</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Мои объявления</h2>
+                <button
+                  onClick={() => navigate('/add-post')}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  + Добавить объявление
+                </button>
+              </div>
               <div className="space-y-4">
                 {userAds.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
@@ -302,7 +310,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
                       exchangeItem={item.exchangeItem}
                       userName={item.userName}
                       onOpenChat={() => handleOpenChat(item.itemId)}
-                      onRemove={() => handleRemoveAd(item.itemId)} // Пропс передается
+                      onRemove={() => handleRemoveAd(item.itemId)}
                     />
                   ))
                 )}

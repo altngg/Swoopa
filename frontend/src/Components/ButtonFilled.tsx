@@ -5,13 +5,15 @@ interface ServiceButtonProps {
   onClick?: () => void;
   className?: string;
   rounded?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+  disabled?: boolean;
 }
 
 const ServiceButton: React.FC<ServiceButtonProps> = ({ 
   children = 'Услуга', 
   onClick,
   className = '',
-  rounded = 'full'
+  rounded = 'full',
+  disabled = false
 }) => {
   const roundedClass = {
     sm: 'rounded',
@@ -25,6 +27,7 @@ const ServiceButton: React.FC<ServiceButtonProps> = ({
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={`        
         py-[0.5rem]          
         px-[2rem]                                               
@@ -43,6 +46,7 @@ const ServiceButton: React.FC<ServiceButtonProps> = ({
         focus:ring-gray-400       
         focus:ring-opacity-50                  
         leading-normal             
+        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         ${className}               
       `}
     >
