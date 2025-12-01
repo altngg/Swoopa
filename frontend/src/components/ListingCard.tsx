@@ -7,6 +7,8 @@ interface ListingCardProps {
   userName?: string;
   onOpenChat?: () => void;
   onRemove?: () => void;
+  onEdit?: () => void;
+  mode?: 'favorites' | 'user-account';
 }
 
 function ListingCard({ 
@@ -14,18 +16,24 @@ function ListingCard({
   exchangeItem = 'exchangeItem', 
   userName = 'Имя пользователя',
   onOpenChat,
-  onRemove 
+  onRemove,
+  onEdit,
+  mode = 'favorites'
 }: ListingCardProps) {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Останавливаем всплытие события, чтобы клик по всей карточке не мешал
     e.stopPropagation();
   };
 
   const handleOpenChatClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onOpenChat?.();
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.();
   };
 
   const handleRemoveClick = (e: React.MouseEvent) => {
@@ -78,12 +86,21 @@ function ListingCard({
           </div>
 
           <div className="mt-auto flex justify-end">
-            <button
-              onClick={handleOpenChatClick}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
-            >
-              Открыть чат
-            </button>
+            {mode === 'favorites' ? (
+              <button
+                onClick={handleOpenChatClick}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+              >
+                Открыть чат
+              </button>
+            ) : (
+              <p
+                onClick={handleEditClick}
+                className="hover:text-gray-600 hover:cursor-pointer text-sm font-medium transition-colors"
+              >
+                Редактировать
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -96,10 +113,14 @@ function ListingCard({
             onClick={handleCardClick}
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Удалить из избранного?
+              {mode === 'favorites' 
+                ? 'Удалить из избранного?' 
+                : 'Удалить объявление?'}
             </h3>
             <p className="text-gray-600 mb-6">
-              Вы уверены, что хотите удалить "{title}" из списка понравившегося?
+              {mode === 'favorites'
+                ? `Вы уверены, что хотите удалить "${title}" из списка понравившегося?`
+                : `Вы уверены, что хотите удалить объявление "${title}"?`}
             </p>
             <div className="flex justify-end gap-3">
               <button

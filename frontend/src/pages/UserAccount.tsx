@@ -39,7 +39,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
-  // Используем состояние для объявлений
   const [userAds, setUserAds] = useState<AdItem[]>([
     { 
       itemId: 1, 
@@ -86,23 +85,18 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
     }
   }, [location]);
 
-  const handleOpenChat = (itemId: number) => {
-    const dialog = mockDialogs.find(d => parseInt(d.id) === itemId);
-    if (dialog) {
-      setSelectedDialog(dialog);
-    } else {
-      const newDialog: DialogItem = {
-        id: itemId.toString(),
-        userName: `Пользователь ${itemId}`,
-        lastMessage: 'Новый диалог',
-        timestamp: 'Только что'
-      };
-      setSelectedDialog(newDialog);
-    }
-  };
-
   const handleCloseChat = () => {
     setSelectedDialog(null);
+  };
+
+  // Функция редактирования объявления
+  const handleEditAd = (ad: AdItem) => {
+    navigate('/add-post', { 
+      state: { 
+        mode: 'edit',
+        adData: ad
+      } 
+    });
   };
 
   const handleNameEditStart = () => {
@@ -145,7 +139,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
     setSelectedDialog(dialog);
   };
 
-  // Функция удаления объявления
   const handleRemoveAd = (itemId: number) => {
     setUserAds(prevAds => prevAds.filter(ad => ad.itemId !== itemId));
   };
@@ -155,7 +148,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
       <h1 className="text-2xl font-bold mb-6 text-gray-900 pl-[2rem]">Личный кабинет</h1>
       
       <div className="flex gap-6">
-        {/* Левая панель с профилем */}
         <div className="w-64 flex-shrink-0 bg-white rounded-lg shadow-sm p-6">
           <div className="flex flex-col items-center mb-6">
             <Avatar 
@@ -309,8 +301,9 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
                       title={item.title}
                       exchangeItem={item.exchangeItem}
                       userName={item.userName}
-                      onOpenChat={() => handleOpenChat(item.itemId)}
+                      onEdit={() => handleEditAd(item)} // Добавлен onEdit
                       onRemove={() => handleRemoveAd(item.itemId)}
+                      mode="user-account" // Добавлен mode
                     />
                   ))
                 )}

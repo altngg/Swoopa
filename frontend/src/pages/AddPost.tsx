@@ -1,17 +1,32 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LeftOutlined } from '@ant-design/icons';
 import ServiceButton from '../components/ButtonFilled';
 import InvertedButton from '../components/ButtonOutline';
 
 const AddPost = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isEditMode, setIsEditMode] = useState(false);
   const [postType, setPostType] = useState<'service' | 'product'>('service');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [exchangeFor, setExchangeFor] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Загружаем данные для редактирования, если они есть
+  useEffect(() => {
+    if (location.state?.mode === 'edit' && location.state?.adData) {
+      setIsEditMode(true);
+      const adData = location.state.adData;
+      setTitle(adData.title || '');
+      setExchangeFor(adData.exchangeItem || '');
+      // Здесь можно загрузить дополнительные данные, если они есть
+      // setDescription(adData.description || '');
+      // setPostType(adData.type || 'service');
+    }
+  }, [location.state]);
 
   const handleGoBack = () => {
     navigate(-1);
@@ -28,7 +43,6 @@ const AddPost = () => {
     if (files && files.length > 0) {
       const newFiles = Array.from(files);
       
-      // Проверяем, чтобы не превысить лимит в 5 файлов
       const totalFiles = photos.length + newFiles.length;
       if (totalFiles > 5) {
         alert('Можно загрузить не более 5 фотографий');
@@ -38,7 +52,6 @@ const AddPost = () => {
         setPhotos([...photos, ...newFiles]);
       }
       
-      // Сбрасываем значение input, чтобы можно было выбрать те же файлы снова
       event.target.value = '';
     }
   };
@@ -50,14 +63,25 @@ const AddPost = () => {
   };
 
   const handlePublish = () => {
-    console.log('Публикация:', {
+    const data = {
       type: postType,
       title,
       description,
       exchangeFor,
-      photos: photos.map(photo => photo.name)
-    });
-    // Здесь будет логика отправки данных на сервер
+      photos: photos.map(photo => photo.name),
+      itemId: isEditMode ? location.state?.adData?.itemId : undefined
+    };
+
+    console.log(isEditMode ? 'Редактирование:' : 'Публикация:', data);
+    
+    if (isEditMode) {
+      // Логика обновления существующего объявления
+      alert('Объявление обновлено!');
+    } else {
+      // Логика создания нового объявления
+      alert('Объявление опубликовано!');
+    }
+    
     navigate('/user-account');
   };
 
@@ -75,7 +99,9 @@ const AddPost = () => {
         >
           <LeftOutlined className="text-lg" />
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">Новая публикация</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {isEditMode ? 'Редактировать публикацию' : 'Новая публикация'}
+        </h1>
       </div>
 
       {/* Основной контейнер */}
@@ -110,7 +136,7 @@ const AddPost = () => {
           )}
         </div>
 
-        {/* Форма добавления публикации */}
+        {/* Форма добавления/редактирования публикации */}
         <div className="space-y-8">
           {/* Название */}
           <div>
@@ -201,7 +227,6 @@ const AddPost = () => {
                       alt={`Прикрепленное фото ${index + 1}`}
                       className="w-[76px] h-[76px] object-cover rounded"
                       onLoad={() => {
-                        // Освобождаем URL после загрузки
                         URL.revokeObjectURL(URL.createObjectURL(photo));
                       }}
                     />
@@ -218,10 +243,10 @@ const AddPost = () => {
             )}
           </div>
 
-          {/* Кнопка публикации */}
+          {/* Кнопка публикации/обновления */}
           <div className="flex justify-end">
             <InvertedButton
-              text="Опубликовать"
+              text={isEditMode ? 'Обновить' : 'Опубликовать'}
               onClick={handlePublish}
               className="px-8 py-2"
             />
