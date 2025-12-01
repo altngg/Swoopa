@@ -323,7 +323,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
               
               <div className="flex-1">
                 {selectedDialog ? (
-                  <div className="h-[calc(100vh-200px)]">
+                  <div className="h-[calc(100vh-200px)] pb-3">
                     <DialogueWindow 
                       onClose={handleCloseChat}
                       itemId={parseInt(selectedDialog.id)}
