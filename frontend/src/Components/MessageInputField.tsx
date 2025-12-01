@@ -1,15 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PaperClipOutlined, SendOutlined } from '@ant-design/icons';
 
-const MessageInput: React.FC = () => {
+interface MessageInputProps {
+  onSendMessage: (message: string) => void;
+}
+
+const MessageInputField: React.FC<MessageInputProps> = ({ onSendMessage }) => {
+  const [message, setMessage] = useState('');
+
   const handleSend = () => {
-    console.log('Send message');
+    if (message.trim()) {
+      onSendMessage(message);
+      setMessage('');
+    }
   };
 
   const handleFileAdd = () => {
     console.log('Add file');
   };
-  const handleKeyPress = (e: { key: string; shiftKey: unknown; preventDefault: () => void; }) => {
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -25,9 +35,11 @@ const MessageInput: React.FC = () => {
         <PaperClipOutlined style={{ fontSize: '18px' }} />
       </button>
 
-      {/* Message Input Field */}
+      {/* Поле ввода сообщения */}
       <input
         type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
         placeholder="Сообщение"
         className="w-full pl-10 pr-12 py-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors duration-200"
         onKeyDown={handleKeyPress}
@@ -43,4 +55,4 @@ const MessageInput: React.FC = () => {
   );
 };
 
-export default MessageInput;
+export default MessageInputField;

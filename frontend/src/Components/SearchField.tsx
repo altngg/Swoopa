@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 
 const SearchField: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Search query:', searchQuery);
     
-    // Сохраняем состояние поиска
-    const event = new CustomEvent('searchPerformed', { 
-      detail: { query: searchQuery, isActive: !!searchQuery.trim() } 
-    });
-    window.dispatchEvent(event);
+    // Переходим на страницу feed с query параметром
+    if (searchQuery.trim()) {
+      navigate(`/feed?q=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate('/feed');
+    }
+    
+    // Очищаем поле поиска
+    setSearchQuery('');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
