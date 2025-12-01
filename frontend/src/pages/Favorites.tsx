@@ -4,8 +4,7 @@ import DialogueWindow from '../components/DialogueWindow';
 
 const Favorites = () => {
   const [selectedChat, setSelectedChat] = useState<number | null>(null);
-  
-  const favoriteItems = [
+  const [favoriteItems, setFavoriteItems] = useState([
     { 
       itemId: 1, 
       title: 'Мока кофеварка', 
@@ -14,29 +13,29 @@ const Favorites = () => {
     },
     { 
       itemId: 2, 
-      title: 'Мока кофеварка', 
-      exchangeItem: 'Урок английского', 
-      userName: 'Максим' 
+      title: 'Вторая кофеварка', 
+      exchangeItem: 'Урок немецкого', 
+      userName: 'Анна' 
     },
     { 
       itemId: 3, 
-      title: 'Мока кофеварка', 
-      exchangeItem: 'Урок английского', 
-      userName: 'Максим' 
+      title: 'Настольная лампа', 
+      exchangeItem: 'Книги', 
+      userName: 'Иван' 
     },
     { 
       itemId: 4, 
-      title: 'Мока кофеварка', 
-      exchangeItem: 'Урок английского', 
-      userName: 'Максим' 
+      title: 'Стул офисный', 
+      exchangeItem: 'Растение', 
+      userName: 'Ольга' 
     },
     { 
       itemId: 5, 
-      title: 'Мока кофеварка', 
-      exchangeItem: 'Урок английского', 
-      userName: 'Максим' 
+      title: 'Книги по программированию', 
+      exchangeItem: 'Кофемашина', 
+      userName: 'Дмитрий' 
     },
-  ];
+  ]);
 
   const handleOpenChat = (itemId: number) => {
     setSelectedChat(itemId);
@@ -44,6 +43,10 @@ const Favorites = () => {
 
   const handleCloseChat = () => {
     setSelectedChat(null);
+  };
+
+  const handleRemoveItem = (itemId: number) => {
+    setFavoriteItems(prevItems => prevItems.filter(item => item.itemId !== itemId));
   };
 
   return (
@@ -56,14 +59,16 @@ const Favorites = () => {
       {/* Основной контейнер с разделением экрана */}
       <div className="flex gap-1">
         {/* Список ListingCards - занимает 2/3 */}
-        <div className="w-2/3">
+        <div className="w-2/3 space-y-4">
           {favoriteItems.map((item) => (
-            <div key={item.itemId} onClick={() => handleOpenChat(item.itemId)}>
-              <ListingCard 
-                title={item.title}
-                exchangeItem={item.exchangeItem}
-              />
-            </div>
+            <ListingCard 
+              key={item.itemId}
+              title={item.title}
+              exchangeItem={item.exchangeItem}
+              userName={item.userName}
+              onOpenChat={() => handleOpenChat(item.itemId)}
+              onRemove={() => handleRemoveItem(item.itemId)}
+            />
           ))}
         </div>
 
