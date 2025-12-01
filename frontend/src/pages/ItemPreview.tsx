@@ -75,7 +75,7 @@ const ItemPreview = () => {
               <p className="text-[1.25rem] text-gray-900 mb-1">
                 Обмен на {itemData.exchangeFor}
               </p>
-              <p className="text-[1.25rem] text-gray-600"
+              <p className="text-[1.25rem] text-gray-600 hover:cursor-pointer"
                onClick={handleUserClick} >
                 {itemData.userName}
                 

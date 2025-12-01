@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../index.css'
 
 interface ListingCardProps {
@@ -20,6 +21,7 @@ function ListingCard({
   onEdit,
   mode = 'favorites'
 }: ListingCardProps) {
+  const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -52,6 +54,11 @@ function ListingCard({
     setShowConfirmDialog(false);
   };
 
+  const handleUserNameClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate('/profile');
+  };
+
   return (
     <>
       <div 
@@ -73,9 +80,12 @@ function ListingCard({
               <p className="text-sm text-gray-600 mt-1">
                 Обмен на {exchangeItem}
               </p>
-              <p className="text-sm text-gray-400 mt-1">
+              <button
+                onClick={handleUserNameClick}
+                className="text-sm text-gray-400 mt-1 hover:text-gray-600 transition-colors"
+              >
                 {userName}
-              </p>
+              </button>
             </div>
             <button
               onClick={handleRemoveClick}
@@ -94,12 +104,12 @@ function ListingCard({
                 Открыть чат
               </button>
             ) : (
-              <p
+              <button
                 onClick={handleEditClick}
-                className="hover:text-gray-600 hover:cursor-pointer text-sm font-medium transition-colors"
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
               >
                 Редактировать
-              </p>
+              </button>
             )}
           </div>
         </div>
