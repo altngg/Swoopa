@@ -29,7 +29,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'ads' | 'messages'>(initialTab);
-  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  const [selectedDialog, setSelectedDialog] = useState<DialogItem | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingCity, setIsEditingCity] = useState(false);
   const [userName, setUserName] = useState('Максим Нахивич');
@@ -39,8 +39,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
-  // Моки для примера
-  const userAds: AdItem[] = [
+  // Используем состояние для объявлений
+  const [userAds, setUserAds] = useState<AdItem[]>([
     { 
       itemId: 1, 
       title: 'Мока кофеварка', 
@@ -53,7 +53,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
       exchangeItem: 'Кофемашина', 
       userName: 'Максим' 
     },
-  ];
+  ]);
 
   const mockDialogs: DialogItem[] = [
     {
@@ -69,6 +69,13 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
       lastMessage: 'Спасиб за сделку, книга класс',
       timestamp: 'Вчера'
     },
+    {
+      id: '3',
+      userName: 'Анна',
+      lastMessage: 'Когда можем встретиться?',
+      unreadCount: 1,
+      timestamp: 'Сегодня'
+    },
   ];
 
   React.useEffect(() => {
@@ -80,11 +87,22 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   }, [location]);
 
   const handleOpenChat = (itemId: number) => {
-    setSelectedChat(itemId);
+    const dialog = mockDialogs.find(d => parseInt(d.id) === itemId);
+    if (dialog) {
+      setSelectedDialog(dialog);
+    } else {
+      const newDialog: DialogItem = {
+        id: itemId.toString(),
+        userName: `Пользователь ${itemId}`,
+        lastMessage: 'Новый диалог',
+        timestamp: 'Только что'
+      };
+      setSelectedDialog(newDialog);
+    }
   };
 
   const handleCloseChat = () => {
-    setSelectedChat(null);
+    setSelectedDialog(null);
   };
 
   const handleNameEditStart = () => {
@@ -112,29 +130,24 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   };
 
   const handleLogout = () => {
-    // Реализация выхода
     console.log('Выход из аккаунта');
     setShowLogoutConfirm(false);
     navigate('/login');
   };
 
   const handleDeleteAccount = () => {
-    // Реализация удаления аккаунта
     console.log('Удаление аккаунта');
     setShowDeleteConfirm(false);
     navigate('/');
   };
 
   const handleDialogClick = (dialog: DialogItem) => {
-    const dialogId = parseInt(dialog.id);
-    if (!isNaN(dialogId)) {
-      setSelectedChat(dialogId);
-    }
+    setSelectedDialog(dialog);
   };
 
+  // Функция удаления объявления
   const handleRemoveAd = (itemId: number) => {
-    // Логика удаления объявления
-    console.log('Удалить объявление', itemId);
+    setUserAds(prevAds => prevAds.filter(ad => ad.itemId !== itemId));
   };
 
   return (
@@ -145,14 +158,12 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
         {/* Левая панель с профилем */}
         <div className="w-64 flex-shrink-0 bg-white rounded-lg shadow-sm p-6">
           <div className="flex flex-col items-center mb-6">
-            {/* Круглая иконка профиля 142x142 */}
             <Avatar 
               size={142}
               icon={<UserOutlined />}
               className="bg-gray-300 mb-4"
             />
             
-            {/* Имя пользователя с иконкой редактирования */}
             <div className="flex items-center justify-center gap-2 mb-2 w-full">
               {isEditingName ? (
                 <div className="flex items-center gap-2 w-full">
@@ -186,7 +197,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
               )}
             </div>
 
-            {/* Город с иконкой редактирования */}
             <div className="flex items-center justify-center gap-2 mb-8 w-full">
               {isEditingCity ? (
                 <div className="flex items-center gap-2 w-full">
@@ -220,36 +230,41 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
               )}
             </div>
 
-            {/* Навигационное меню */}
-            <div className="w-full space-y-4">
-              <Button
-                type={activeTab === 'messages' ? 'primary' : 'text'}
-                block
-                className="text-left h-auto py-2 flex items-center justify-start"
+            <div className="w-full space-y-1">
+              <button
+                className={`w-full text-left h-10 px-3 py-2 flex items-center justify-start rounded transition-colors ${
+                  activeTab === 'messages' 
+                    ? 'bg-blue-50 text-blue-600 font-medium' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
                 onClick={() => {
                   setActiveTab('messages');
                   navigate('/user-account/messages');
                 }}
               >
                 Сообщения
-              </Button>
+              </button>
               
-              <Button
-                type={activeTab === 'ads' ? 'primary' : 'text'}
-                block
-                className="text-left h-auto py-2 flex items-center justify-start"
+              <button
+                className={`w-full text-left h-10 px-3 py-2 flex items-center justify-start rounded transition-colors ${
+                  activeTab === 'ads' 
+                    ? 'bg-blue-50 text-blue-600 font-medium' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
                 onClick={() => {
                   setActiveTab('ads');
                   navigate('/user-account');
                 }}
               >
                 Мои объявления
-              </Button>
+              </button>
+              
+              <div className="h-px bg-gray-200 my-2"></div>
               
               <Button
                 type="text"
                 block
-                className="text-left h-auto py-2 flex items-center justify-start text-gray-600"
+                className="text-left h-10 flex items-center justify-start text-gray-600 hover:text-gray-800"
                 icon={<LogoutOutlined />}
                 onClick={() => setShowLogoutConfirm(true)}
               >
@@ -260,7 +275,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
                 type="text"
                 danger
                 block
-                className="text-left h-auto py-2 flex items-center justify-start"
+                className="text-left h-10 flex items-center justify-start hover:text-red-700"
                 icon={<DeleteOutlined />}
                 onClick={() => setShowDeleteConfirm(true)}
               >
@@ -270,43 +285,49 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
           </div>
         </div>
 
-        {/* Правая панель с контентом */}
         <div className="flex-1">
           {activeTab === 'ads' && (
             <div>
               <h2 className="text-xl font-semibold mb-4 text-gray-900">Мои объявления</h2>
               <div className="space-y-4">
-                {userAds.map((item) => (
-                  <ListingCard 
-                    key={item.itemId}
-                    title={item.title}
-                    exchangeItem={item.exchangeItem}
-                    userName={item.userName}
-                    onOpenChat={() => handleOpenChat(item.itemId)}
-                    onRemove={() => handleRemoveAd(item.itemId)}
-                  />
-                ))}
+                {userAds.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    У вас пока нет объявлений
+                  </div>
+                ) : (
+                  userAds.map((item) => (
+                    <ListingCard 
+                      key={item.itemId}
+                      title={item.title}
+                      exchangeItem={item.exchangeItem}
+                      userName={item.userName}
+                      onOpenChat={() => handleOpenChat(item.itemId)}
+                      onRemove={() => handleRemoveAd(item.itemId)} // Пропс передается
+                    />
+                  ))
+                )}
               </div>
             </div>
           )}
 
           {activeTab === 'messages' && (
             <div className="flex gap-6">
-              {/* Список диалогов */}
               <div className="w-96">
                 <DialoguesList 
                   dialogs={mockDialogs}
                   onDialogClick={handleDialogClick}
+                  selectedDialogId={selectedDialog?.id}
                 />
               </div>
               
-              {/* Окно чата */}
               <div className="flex-1">
-                {selectedChat ? (
+                {selectedDialog ? (
                   <div className="h-[calc(100vh-200px)]">
                     <DialogueWindow 
                       onClose={handleCloseChat}
-                      itemId={selectedChat}
+                      itemId={parseInt(selectedDialog.id)}
+                      dialogUserName={selectedDialog.userName}
+                      lastMessage={selectedDialog.lastMessage}
                     />
                   </div>
                 ) : (
@@ -323,7 +344,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
         </div>
       </div>
 
-      {/* Модальное окно подтверждения выхода */}
       <Modal
         title="Выйти из аккаунта"
         open={showLogoutConfirm}
@@ -336,7 +356,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
         <p>Вы уверены, что хотите выйти из аккаунта?</p>
       </Modal>
 
-      {/* Модальное окно подтверждения удаления аккаунта */}
       <Modal
         title="Удалить аккаунт"
         open={showDeleteConfirm}

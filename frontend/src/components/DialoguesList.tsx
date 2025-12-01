@@ -14,9 +14,10 @@ interface Dialog {
 interface DialoguesListProps {
   dialogs: Dialog[];
   onDialogClick: (dialog: Dialog) => void;
+  selectedDialogId?: string;
 }
 
-function DialoguesList({ dialogs, onDialogClick }: DialoguesListProps) {
+function DialoguesList({ dialogs, onDialogClick, selectedDialogId }: DialoguesListProps) {
   return (
     <div className="w-96 bg-white rounded-lg shadow-sm">
       <div className="p-4 border-b border-gray-200">
@@ -28,7 +29,9 @@ function DialoguesList({ dialogs, onDialogClick }: DialoguesListProps) {
           <div 
             key={dialog.id}
             onClick={() => onDialogClick(dialog)}
-            className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+            className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+              selectedDialogId === dialog.id ? 'bg-blue-50 hover:bg-blue-50' : ''
+            }`}
           >
             <div className="flex items-start gap-3">
               <Avatar 
