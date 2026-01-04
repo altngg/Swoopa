@@ -19,7 +19,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Django бэкенд (пока один сервис, потом разделим на микросервисы)
+  # Django бэкенд 
   backend:
     build: 
       context: ./backend
