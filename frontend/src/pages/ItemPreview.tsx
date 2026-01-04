@@ -3,16 +3,25 @@ import { HeartOutlined, HeartFilled } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Gallery from '../components/Gallery';
 import ButtonFilled from '../components/ButtonFilled';
-import Modal from 'antd/lib/modal/Modal';
-import { message } from 'antd';
+import { Modal, message } from 'antd';
 
-const ItemPreview = ({ isFree = false }) => {
+interface ItemPreviewProps {
+  isFree?: boolean;
+}
+
+interface UserItem {
+  id: number;
+  title: string;
+  exchangeFor: string;
+}
+
+const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
   const [showExchangeModal, setShowExchangeModal] = useState(false);
   const [isOfferSent, setIsOfferSent] = useState(false);
-  const [userItems, setUserItems] = useState([]);
-  const [selectedItemId, setSelectedItemId] = useState(null);
+  const [userItems, setUserItems] = useState<UserItem[]>([]);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
   // Мок данные для товара
   const itemData = {
@@ -27,7 +36,7 @@ const ItemPreview = ({ isFree = false }) => {
   };
 
   // Мок данные публикаций текущего пользователя
-  const mockUserItems = [
+  const mockUserItems: UserItem[] = [
     { id: 1, title: 'Книга "React для начинающих"', exchangeFor: 'Кофеварка' },
     { id: 2, title: 'Набор отверток', exchangeFor: 'Книги по программированию' },
     { id: 3, title: 'Комнатный горшок с цветком', exchangeFor: 'Что-нибудь интересное' },
@@ -57,7 +66,21 @@ const ItemPreview = ({ isFree = false }) => {
     navigate('/profile');
   };
 
-  const sendOffer = (offerData) => {
+  interface OfferData {
+    type: 'exchange' | 'free';
+    itemId: number;
+    selectedItemId?: number;
+  }
+
+  interface ChatData {
+    itemId: number;
+    fromUserId: string;
+    toUserId: number;
+    offerType: 'exchange' | 'free';
+    selectedItemId?: number;
+  }
+
+  const sendOffer = (offerData: OfferData) => {
     // Здесь должен быть API запрос для отправки предложения
     console.log('Отправка предложения:', offerData);
     
@@ -67,16 +90,16 @@ const ItemPreview = ({ isFree = false }) => {
       fromUserId: 'current-user-id', // ID текущего пользователя
       toUserId: itemData.userId,
       offerType: itemData.isFree ? 'free' : 'exchange',
-      selectedItemId: selectedItemId,
+      selectedItemId: offerData.selectedItemId,
     });
   };
 
-  const createChat = (chatData) => {
+  const createChat = (chatData: ChatData) => {
     // API запрос для создания чата
     console.log('Создание чата:', chatData);
   };
 
-  const handleItemSelect = (itemId) => {
+  const handleItemSelect = (itemId: number) => {
     setSelectedItemId(itemId);
   };
 
@@ -89,7 +112,7 @@ const ItemPreview = ({ isFree = false }) => {
     sendOffer({
       type: 'exchange',
       itemId: itemData.id,
-      selectedItemId: selectedItemId,
+      selectedItemId: selectedItemId || undefined,
     });
 
     setShowExchangeModal(false);

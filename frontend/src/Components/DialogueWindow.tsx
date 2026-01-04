@@ -9,12 +9,16 @@ interface DialogueWindowProps {
   itemId: number;
   dialogUserName?: string;
   lastMessage?: string;
+  offerType?: 'exchange' | 'free'; // Добавлено новое свойство
+  offerStatus?: 'pending' | 'accepted' | 'rejected'; // Добавлено новое свойство
 }
 
 const DialogueWindow: React.FC<DialogueWindowProps> = ({ 
   onClose, 
   dialogUserName = 'Пользователь',
-  lastMessage = ''
+  lastMessage = '',
+  offerType = 'exchange',
+  offerStatus = 'pending'
 }) => {
   const [messages, setMessages] = useState([
     { id: 1, text: lastMessage, isCurrentUser: false, time: '10:30' },
@@ -31,6 +35,27 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     setMessages([...messages, newMessage]);
+  };
+
+  // Отображение информации о предложении, если оно есть
+  const renderOfferInfo = () => {
+    if (!offerType) return null;
+
+    return (
+      <div className="px-4 py-2 bg-blue-50 border-b border-blue-100">
+        <div className="text-sm text-blue-800">
+          <strong>Предложение:</strong> {offerType === 'exchange' ? 'Обмен' : 'Забрать даром'} • 
+          <span className={`ml-2 px-2 py-0.5 rounded text-xs ${
+            offerStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+            offerStatus === 'accepted' ? 'bg-green-100 text-green-800' :
+            'bg-red-100 text-red-800'
+          }`}>
+            {offerStatus === 'pending' ? 'Ожидает ответа' : 
+             offerStatus === 'accepted' ? 'Принято' : 'Отклонено'}
+          </span>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -54,6 +79,9 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
           className="text-gray-400 hover:text-gray-600"
         />
       </div>
+
+      {/* Информация о предложении */}
+      {renderOfferInfo()}
 
       {/* Область сообщений с прокруткой */}
       <div className="flex-1 p-4 overflow-y-auto">

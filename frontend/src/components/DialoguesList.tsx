@@ -9,6 +9,10 @@ interface Dialog {
   lastMessage: string;
   unreadCount?: number;
   timestamp: string;
+  itemId: number; // Делаем обязательным
+  itemTitle: string; // Делаем обязательным
+  offerType?: 'exchange' | 'free';
+  status?: 'pending' | 'accepted' | 'rejected';
 }
 
 interface DialoguesListProps {
@@ -16,6 +20,7 @@ interface DialoguesListProps {
   onDialogClick: (dialog: Dialog) => void;
   selectedDialogId?: string;
 }
+
 
 function DialoguesList({ dialogs, onDialogClick, selectedDialogId }: DialoguesListProps) {
   return (
@@ -50,6 +55,32 @@ function DialoguesList({ dialogs, onDialogClick, selectedDialogId }: DialoguesLi
                 <p className="text-sm text-gray-600 truncate mt-1">
                   {dialog.lastMessage}
                 </p>
+                
+                {/* Информация о предложении, если есть */}
+                {dialog.offerType && (
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                      dialog.offerType === 'exchange' 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {dialog.offerType === 'exchange' ? 'Обмен' : 'Даром'}
+                    </span>
+                    {dialog.status && (
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                        dialog.status === 'pending' 
+                          ? 'bg-yellow-100 text-yellow-800' 
+                          : dialog.status === 'accepted'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {dialog.status === 'pending' ? 'Ожидает' : 
+                         dialog.status === 'accepted' ? 'Принято' : 'Отклонено'}
+                      </span>
+                    )}
+                  </div>
+                )}
+                
                 {dialog.unreadCount && dialog.unreadCount > 0 && (
                   <div className="inline-flex items-center justify-center min-w-5 h-5 px-1 mt-1 text-xs font-medium text-white bg-red-500 rounded-full">
                     {dialog.unreadCount}

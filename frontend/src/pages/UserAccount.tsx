@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Avatar, Button, Input, Modal } from 'antd';
-import { UserOutlined, EditOutlined, LogoutOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Avatar, Button, Input, Modal, Badge } from 'antd';
+import { UserOutlined, EditOutlined, LogoutOutlined, DeleteOutlined, BellOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import DialoguesList from '../components/DialoguesList';
 import DialogueWindow from '../components/DialogueWindow';
 import ListingCard from '../components/ListingCard';
 
 interface UserAccountProps {
-  initialTab?: 'ads' | 'messages';
+  initialTab?: 'ads' | 'messages' | 'offers';
 }
 
 interface AdItem {
@@ -15,20 +15,41 @@ interface AdItem {
   title: string;
   exchangeItem: string;
   userName: string;
+  isFree?: boolean;
 }
 
-interface DialogItem {
+interface Dialog {
   id: string;
   userName: string;
   lastMessage: string;
   unreadCount?: number;
   timestamp: string;
+  itemId: number;
+  itemTitle: string;
+  offerType?: 'exchange' | 'free';
+  status?: 'pending' | 'accepted' | 'rejected';
+}
+
+type DialogItem = Dialog
+
+interface OfferItem {
+  id: number;
+  fromUserId: string;
+  fromUserName: string;
+  toUserId: string;
+  itemId: number;
+  itemTitle: string;
+  offerType: 'exchange' | 'free';
+  selectedItemId?: number;
+  selectedItemTitle?: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
 }
 
 const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'ads' | 'messages'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'ads' | 'messages' | 'offers'>(initialTab);
   const [selectedDialog, setSelectedDialog] = useState<DialogItem | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingCity, setIsEditingCity] = useState(false);
@@ -38,58 +59,116 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const [tempCity, setTempCity] = useState(userCity);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [incomingOffers, setIncomingOffers] = useState<OfferItem[]>([]);
   
   const [userAds, setUserAds] = useState<AdItem[]>([
     { 
       itemId: 1, 
       title: 'Мока кофеварка', 
       exchangeItem: 'Урок английского', 
-      userName: 'Максим' 
+      userName: 'Максим',
+      isFree: false
     },
     { 
       itemId: 2, 
       title: 'Книги по программированию', 
       exchangeItem: 'Кофемашина', 
-      userName: 'Максим' 
+      userName: 'Максим',
+      isFree: false
+    },
+    { 
+      itemId: 3, 
+      title: 'Старый журнальный столик', 
+      exchangeItem: '', 
+      userName: 'Максим',
+      isFree: true
     },
   ]);
 
-  const mockDialogs: DialogItem[] = [
+  const mockDialogs: Dialog[] = [
     {
       id: '1',
       userName: 'Петр',
       lastMessage: 'Хей, вам еще интересен товар?',
       unreadCount: 2,
-      timestamp: '10:30 AM'
+      timestamp: '10:30 AM',
+      itemId: 1,
+      itemTitle: 'Мока кофеварка',
+      offerType: 'exchange',
+      status: 'pending'
     },
     {
       id: '2', 
       userName: 'Ссаныч',
       lastMessage: 'Спасиб за сделку, книга класс',
-      timestamp: 'Вчера'
+      timestamp: 'Вчера',
+      itemId: 2,
+      itemTitle: 'Книги по программированию',
+      offerType: 'exchange',
+      status: 'accepted'
     },
     {
       id: '3',
       userName: 'Анна',
       lastMessage: 'Когда можем встретиться?',
       unreadCount: 1,
-      timestamp: 'Сегодня'
+      timestamp: 'Сегодня',
+      itemId: 3,
+      itemTitle: 'Старый журнальный столик',
+      offerType: 'free',
+      status: 'pending'
     },
   ];
 
-  React.useEffect(() => {
+  useEffect(() => {
+    // Загрузка входящих предложений
+    loadIncomingOffers();
+    
+    // Определение активной вкладки из URL
     if (location.pathname === '/user-account/messages') {
       setActiveTab('messages');
-    } else if (location.pathname === '/user-account') {
+    } else if (location.pathname === '/user-account/offers') {
+      setActiveTab('offers');
+    } else {
       setActiveTab('ads');
     }
   }, [location]);
+
+  const loadIncomingOffers = () => {
+    // Мок данные входящих предложений
+    const mockOffers: OfferItem[] = [
+      {
+        id: 1,
+        fromUserId: 'user456',
+        fromUserName: 'Анна Петрова',
+        toUserId: 'user123',
+        itemId: 1,
+        itemTitle: 'Мока кофеварка',
+        offerType: 'exchange',
+        selectedItemId: 4,
+        selectedItemTitle: 'Книга "JavaScript для профессионалов"',
+        status: 'pending',
+        createdAt: '2024-01-15 14:30'
+      },
+      {
+        id: 2,
+        fromUserId: 'user789',
+        fromUserName: 'Иван Сидоров',
+        toUserId: 'user123',
+        itemId: 3,
+        itemTitle: 'Старый журнальный столик',
+        offerType: 'free',
+        status: 'pending',
+        createdAt: '2024-01-16 09:15'
+      }
+    ];
+    setIncomingOffers(mockOffers);
+  };
 
   const handleCloseChat = () => {
     setSelectedDialog(null);
   };
 
-  // Функция редактирования объявления
   const handleEditAd = (ad: AdItem) => {
     navigate('/add-post', { 
       state: { 
@@ -135,12 +214,69 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
     navigate('/');
   };
 
-  const handleDialogClick = (dialog: DialogItem) => {
-    setSelectedDialog(dialog);
+  const handleDialogClick = (dialog: Dialog) => {
+    const typedDialog: DialogItem = {
+      id: dialog.id,
+      userName: dialog.userName,
+      lastMessage: dialog.lastMessage,
+      unreadCount: dialog.unreadCount,
+      timestamp: dialog.timestamp,
+      itemId: dialog.itemId,
+      itemTitle: dialog.itemTitle,
+      offerType: dialog.offerType,
+      status: dialog.status
+    };
+    setSelectedDialog(typedDialog);
   };
 
   const handleRemoveAd = (itemId: number) => {
     setUserAds(prevAds => prevAds.filter(ad => ad.itemId !== itemId));
+  };
+
+  const handleOfferResponse = (offerId: number, status: 'accepted' | 'rejected') => {
+    // Обновление статуса предложения
+    setIncomingOffers(prev => 
+      prev.map(offer => 
+        offer.id === offerId ? { ...offer, status } : offer
+      )
+    );
+
+    // Создание диалога при принятии предложения
+    if (status === 'accepted') {
+      const offer = incomingOffers.find(o => o.id === offerId);
+      if (offer) {
+        createDialogFromOffer(offer);
+      }
+    }
+  };
+
+  const createDialogFromOffer = (offer: OfferItem) => {
+    // Создание нового диалога из предложения
+    const newDialog: Dialog = {
+      id: `offer-${offer.id}`,
+      userName: offer.fromUserName,
+      lastMessage: `Предложение ${offer.offerType === 'exchange' ? 'обмена' : 'забрать даром'}`,
+      timestamp: 'Сейчас',
+      itemId: offer.itemId,
+      itemTitle: offer.itemTitle,
+      offerType: offer.offerType,
+      status: 'accepted'
+    };
+
+    // Здесь должен быть API запрос для сохранения диалога
+    console.log('Создан диалог:', newDialog);
+    
+    // Добавляем новый диалог в список
+    // В реальном приложении здесь был бы запрос к API
+  };
+
+  const navigateToTab = (tab: 'ads' | 'messages' | 'offers') => {
+    setActiveTab(tab);
+    navigate(`/user-account${tab !== 'ads' ? `/${tab}` : ''}`);
+  };
+
+  const getPendingOffersCount = () => {
+    return incomingOffers.filter(offer => offer.status === 'pending').length;
   };
 
   return (
@@ -224,15 +360,29 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
 
             <div className="w-full space-y-1">
               <button
+                className={`w-full text-left h-10 px-3 py-2 flex items-center justify-between rounded transition-colors ${
+                  activeTab === 'offers' 
+                    ? 'bg-blue-50 text-blue-600 font-medium' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                onClick={() => navigateToTab('offers')}
+              >
+                <span className="flex items-center">
+                  <BellOutlined className="mr-2" />
+                  Предложения
+                </span>
+                {getPendingOffersCount() > 0 && (
+                  <Badge count={getPendingOffersCount()} size="small" />
+                )}
+              </button>
+              
+              <button
                 className={`w-full text-left h-10 px-3 py-2 flex items-center justify-start rounded transition-colors ${
                   activeTab === 'messages' 
                     ? 'bg-blue-50 text-blue-600 font-medium' 
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
-                onClick={() => {
-                  setActiveTab('messages');
-                  navigate('/user-account/messages');
-                }}
+                onClick={() => navigateToTab('messages')}
               >
                 Сообщения
               </button>
@@ -243,10 +393,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
                     ? 'bg-blue-50 text-blue-600 font-medium' 
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
-                onClick={() => {
-                  setActiveTab('ads');
-                  navigate('/user-account');
-                }}
+                onClick={() => navigateToTab('ads')}
               >
                 Мои объявления
               </button>
@@ -301,13 +448,92 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
                       title={item.title}
                       exchangeItem={item.exchangeItem}
                       userName={item.userName}
-                      onEdit={() => handleEditAd(item)} // Добавлен onEdit
+                      isFree={item.isFree}
+                      onEdit={() => handleEditAd(item)}
                       onRemove={() => handleRemoveAd(item.itemId)}
-                      mode="user-account" // Добавлен mode
+                      mode="user-account"
                     />
                   ))
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'offers' && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Входящие предложения</h2>
+              
+              {incomingOffers.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  У вас пока нет новых предложений
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {incomingOffers.map((offer) => (
+                    <div key={offer.id} className="bg-white rounded-lg border border-gray-200 p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">
+                            Предложение от {offer.fromUserName}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {offer.offerType === 'exchange' 
+                              ? `Предлагает обмен на: ${offer.selectedItemTitle}` 
+                              : 'Хочет забрать даром'}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          offer.status === 'pending' 
+                            ? 'bg-yellow-100 text-yellow-800' 
+                            : offer.status === 'accepted'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {offer.status === 'pending' ? 'Ожидает ответа' : 
+                           offer.status === 'accepted' ? 'Принято' : 'Отклонено'}
+                        </span>
+                      </div>
+                      
+                      <div className="mb-4">
+                        <p className="text-gray-700 mb-2">
+                          <span className="font-medium">Ваш товар:</span> {offer.itemTitle}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Предложение получено: {new Date(offer.createdAt).toLocaleString('ru-RU')}
+                        </p>
+                      </div>
+                      
+                      {offer.status === 'pending' && (
+                        <div className="flex gap-2">
+                          <Button
+                            type="primary"
+                            icon={<CheckOutlined />}
+                            onClick={() => handleOfferResponse(offer.id, 'accepted')}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            Принять
+                          </Button>
+                          <Button
+                            danger
+                            icon={<CloseOutlined />}
+                            onClick={() => handleOfferResponse(offer.id, 'rejected')}
+                          >
+                            Отклонить
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              // Переход к диалогу или создание нового
+                              navigateToTab('messages');
+                            }}
+                          >
+                            Написать
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -326,9 +552,11 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
                   <div className="h-[calc(100vh-200px)] pb-3">
                     <DialogueWindow 
                       onClose={handleCloseChat}
-                      itemId={parseInt(selectedDialog.id)}
+                      itemId={selectedDialog.itemId}
                       dialogUserName={selectedDialog.userName}
                       lastMessage={selectedDialog.lastMessage}
+                      offerType={selectedDialog.offerType}
+                      offerStatus={selectedDialog.status}
                     />
                   </div>
                 ) : (
