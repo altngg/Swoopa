@@ -6,6 +6,7 @@ interface ListingCardProps {
   title?: string;
   exchangeItem?: string;
   userName?: string;
+  isFree?: boolean; // Добавлено новое свойство
   onOpenChat?: () => void;
   onRemove?: () => void;
   onEdit?: () => void;
@@ -16,6 +17,7 @@ function ListingCard({
   title = 'title', 
   exchangeItem = 'exchangeItem', 
   userName = 'Имя пользователя',
+  isFree = false, // Значение по умолчанию
   onOpenChat,
   onRemove,
   onEdit,
@@ -78,7 +80,7 @@ function ListingCard({
                 {title}
               </h3>
               <p className="text-sm text-gray-600 mt-1">
-                Обмен на {exchangeItem}
+                {isFree ? 'Отдам даром' : `Обмен на ${exchangeItem}`}
               </p>
               <button
                 onClick={handleUserNameClick}
