@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 
+from chats.models import Chat
 from users.models import User
 
 class PublicationType(models.Model):
@@ -28,8 +29,9 @@ class Publication(models.Model):
     slug = models.CharField(unique=True)
     price = models.CharField(blank=True)
     description = models.TextField(blank=True)
-    main_image = models.ImageField(upload_to='publications/main/') 
+    main_image = models.ImageField(upload_to='publications/main/', null=True) 
     created_at = models.DateTimeField(auto_now_add=True)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, null=True, blank=True)
 
     publication_type = models.ForeignKey(PublicationType, on_delete=models.CASCADE, related_name='publications_type')
     status = models.ForeignKey(Status, on_delete=models.CASCADE, related_name='publications_status')

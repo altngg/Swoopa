@@ -36,6 +36,8 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'users',
+    'chats',
+    'offers',
     'main',
 
     'django.contrib.admin',
