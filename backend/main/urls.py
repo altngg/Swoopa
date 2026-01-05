@@ -10,5 +10,5 @@ urlpatterns = [
     path('publication/<slug:slug>/edit/', edit_publication, name='edit_publication'),
     path('favorites/add/', add_favorite, name='edit_publication'),
     path('favorites/remove/<int:favorite_id>/', remove_favorite, name='edit_publication'),
-    path('favorites/user/<int:user_id>/', get_user_favorites, name='edit_publication'),
+    path('favorites/<int:user_id>/', get_user_favorites, name='edit_publication'),
 ]

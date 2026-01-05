@@ -23,7 +23,10 @@ Including another URLconf
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('users.urls')),
-    path('main/', include('main.urls'))
+    path('main/', include('main.urls')),
+    path('users/', include('users.urls')),
+    # path('chats/', include('chats.urls')),
+    # path('offers/', include('offers.urls')),
 ]
 
 if settings.DEBUG:
