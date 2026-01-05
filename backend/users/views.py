@@ -1,13 +1,18 @@
 from rest_framework import generics, permissions, status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login, logout
 from django.db import transaction
-from .serializer import (
-    UserSerializer, RegisterSerializer, LoginSerializer
-)
-from .models import User
+from .serializer import (LocationSerializer, UserSerializer, RegisterSerializer, LoginSerializer)
+from .models import Location, User
+
+@api_view(['GET'])
+def get_all_locations(request):
+    locations = Location.objects.all()
+    serializedData = LocationSerializer(locations, many=True).data
+    return Response(serializedData)
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()

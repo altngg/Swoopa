@@ -18,7 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
         allow_null=True
     )
     
-    # Поле для отображения URL изображения
     profile_picture_url = serializers.SerializerMethodField()
     
     class Meta:
@@ -62,13 +61,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         }
     
     def validate(self, attrs):
-        # Проверка совпадения паролей
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError(
                 {"password": "Password fields didn't match."}
             )
         
-        # Проверка уникальности username и email
         if User.objects.filter(username=attrs['username']).exists():
             raise serializers.ValidationError(
                 {"username": "A user with that username already exists."}
@@ -82,10 +79,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
     
     def create(self, validated_data):
-        # Убираем password2 из данных
         validated_data.pop('password2')
         
-        # Создаем пользователя
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -98,7 +93,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 class LoginSerializer(serializers.Serializer):
-    # Можно логиниться по username ИЛИ email
     username_or_email = serializers.CharField()
     password = serializers.CharField(write_only=True)
     
@@ -111,9 +105,7 @@ class LoginSerializer(serializers.Serializer):
                 "Must include 'username_or_email' and 'password'."
             )
         
-        # Пытаемся найти пользователя по username или email
         if '@' in username_or_email:
-            # Это email
             try:
                 user = User.objects.get(email=username_or_email)
                 username = user.username
@@ -122,10 +114,8 @@ class LoginSerializer(serializers.Serializer):
                     "Unable to log in with provided credentials."
                 )
         else:
-            # Это username
             username = username_or_email
         
-        # Аутентифицируем пользователя
         user = authenticate(username=username, password=password)
         
         if not user:
@@ -183,7 +173,6 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         user = self.context['request'].user
         
-        # Проверяем, не используется ли email другим пользователем
         if User.objects.filter(email=value).exclude(id=user.id).exists():
             raise serializers.ValidationError(
                 "A user with that email already exists."
