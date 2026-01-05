@@ -1,12 +1,43 @@
-import './index.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Feed from './pages/Feed';
+import Favorites from './pages/Favorites';
+import UserAccount from './pages/UserAccount';
+import ItemPreview from './pages/ItemPreview';
+import Profile from './pages/Profile';
+import SearchField from './components/SearchField';
+import AddPost from './pages/AddPost';
+import LoginPage from './pages/LoginPage';
 
 function App() {
-
   return (
-    <h1 className="text-5xl">
-      Hello world!
-    </h1>
-  )
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="*" element={
+            <>
+              <Navbar />
+              <SearchField />
+              <Routes>
+                <Route path="/" element={<Feed />} />
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/favorites" element={<Favorites />} />
+                <Route path="/user-account" element={<UserAccount initialTab="ads" />} />
+                <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
+                <Route path="/user-account/offers" element={<UserAccount initialTab="offers" />} />
+                <Route path="/item/:id" element={<ItemPreview />} />
+                <Route path="/item/free/:id" element={<ItemPreview isFree={true} />} />
+                <Route path="/add-post" element={<AddPost />} />
+                <Route path="/profile" element={<Profile />} />
+              </Routes>
+            </>
+          } />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
