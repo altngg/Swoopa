@@ -39,8 +39,6 @@ class Publication(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
-        if not self.location and self.author and self.author.location:
-            self.location = str(self.author.location)
         super().save(*args, **kwargs)
 
     def __str__(self):
