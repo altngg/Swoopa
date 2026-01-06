@@ -1,14 +1,15 @@
 from django.db import models
 
+from main.models import Publication
 from users.models import User
 
 class Chat(models.Model):
-    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chats_as_user1')
-    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chats_as_user2')
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user1.username}, {self.user2.username}"
+        return f"{self.publication.author.username}, {self.author}"
     
 class Message(models.Model):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)

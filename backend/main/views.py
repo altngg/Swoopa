@@ -1,6 +1,7 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 from users.models import User
 from .models import Publication, Favorite
@@ -27,7 +28,7 @@ def get_publication_by_slug(request, slug):
     return Response(serializer.data)
 
 @api_view(['GET'])
-def get_my_publication(request, user_id):
+def get_user_publications(request, user_id):
     try:
         user = User.objects.get(id=user_id)
     except User.DoesNotExist:
@@ -40,24 +41,31 @@ def get_my_publication(request, user_id):
     serializedData = PublicationSerializer(publications, many=True).data
     return Response(serializedData)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_publications(request):
+    publications = Publication.objects.filter(author=request.user)
+    serializer = PublicationSerializer(publications, many=True)
+    return Response(serializer.data)
+
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_publication(request):
-    try:
-        user = User.objects.get(request.data.get('author_id'))
-    except User.DoesNotExist:
-        return Response(
-            {"error": "User not found."},
-            status=status.HTTP_404_NOT_FOUND
-        )
+    data = request.data.copy()
     
-    data = request.data
-    serializer = PublicationSerializer(data=data)
+    if 'author' in data:
+        data.pop('author')
+    
+    serializer = PublicationSerializer(data=data, context={'request': request})
+    
     if serializer.is_valid():
-        serializer.save()
+        serializer.save(author=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PATCH', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def edit_publication(request, slug):
     try:
         publication = Publication.objects.get(slug=slug)
@@ -88,11 +96,9 @@ def edit_publication(request, slug):
 
 @api_view(['POST'])
 def add_favorite(request):
-    # Получаем данные из запроса
     user_id = request.data.get('user_id')
     slug = request.data.get('slug')
     
-    # Проверяем наличие обязательных полей
     if not user_id or not slug:
         return Response(
             {"error": "user_id and slug are required."},
@@ -100,7 +106,6 @@ def add_favorite(request):
         )
     
     try:
-        # Проверяем существование пользователя
         user = User.objects.get(id=user_id)
     except User.DoesNotExist:
         return Response(
@@ -109,7 +114,6 @@ def add_favorite(request):
         )
     
     try:
-        # Проверяем существование публикации
         publication = Publication.objects.get(slug=slug)
     except Publication.DoesNotExist:
         return Response(
@@ -117,14 +121,12 @@ def add_favorite(request):
             status=status.HTTP_404_NOT_FOUND
         )
     
-    # Проверяем, не добавлена ли уже публикация в избранное у пользователя
     if Favorite.objects.filter(user=user, publication=publication).exists():
         return Response(
             {"error": "This publication is already in favorites."},
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # Создаем запись в избранном
     favorite = Favorite.objects.create(user=user, publication=publication)
     
     return Response(
@@ -136,6 +138,7 @@ def add_favorite(request):
     )
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def remove_favorite(request, favorite_id):
     try:
         favorite = Favorite.objects.get(id=favorite_id)
@@ -152,17 +155,9 @@ def remove_favorite(request, favorite_id):
     )
 
 @api_view(['GET'])
-def get_user_favorites(request, user_id):
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        return Response(
-            {"error": "User not found."},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
-    favorites = Favorite.objects.filter(user=user)
-    # Получаем список публикаций из избранного
+@permission_classes([IsAuthenticated])
+def get_my_favorites(request):    
+    favorites = Favorite.objects.filter(user=request.user)
     publications = [favorite.publication for favorite in favorites]
     
     serializer = PublicationSerializer(publications, many=True)
