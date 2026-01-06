@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import AuthForm from '../components/AuthForm';
+import Navbar from '../components/Navbar';
 
 const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -9,23 +10,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Шапка */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link 
-              to="/" 
-              className="font-galindo text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
-            >
-              SWOOPA
-            </Link>
-            <div className="text-gray-600">
-              <Link to="/" className="hover:text-gray-900 transition-colors">
-                Вернуться на главную
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Основное содержимое */}
       <main className="flex-1 flex items-center justify-center py-12">
