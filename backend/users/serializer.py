@@ -129,52 +129,43 @@ class LoginSerializer(serializers.Serializer):
         attrs['user'] = user
         return attrs
 
-class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(write_only=True, required=True)
-    new_password = serializers.CharField(
-        write_only=True,
-        required=True,
-        validators=[validate_password]
-    )
-    new_password2 = serializers.CharField(write_only=True, required=True)
-    
-    def validate(self, attrs):
-        if attrs['new_password'] != attrs['new_password2']:
-            raise serializers.ValidationError(
-                {"new_password": "Password fields didn't match."}
-            )
-        return attrs
-    
-    def validate_old_password(self, value):
-        user = self.context['request'].user
-        if not user.check_password(value):
-            raise serializers.ValidationError("Old password is not correct.")
-        return value
-
-class UpdateProfileSerializer(serializers.ModelSerializer):
-    location_id = serializers.PrimaryKeyRelatedField(
-        queryset=Location.objects.all(),
-        source='location',
-        write_only=True,
-        required=False,
-        allow_null=True
-    )
+class UserUpdateSerializer(serializers.ModelSerializer):
+    location_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    location = LocationSerializer(read_only=True)
     
     class Meta:
         model = User
         fields = [
-            'first_name', 'last_name', 'email',
-            'location_id', 'profile_picture'
+            'id', 'username', 'first_name', 'last_name',
+            'location', 'location_id'
         ]
+        read_only_fields = ['id', 'username']
         extra_kwargs = {
-            'email': {'required': False},
+            'first_name': {'required': False, 'allow_blank': True},
+            'last_name': {'required': False, 'allow_blank': True},
         }
     
-    def validate_email(self, value):
-        user = self.context['request'].user
+    def update(self, instance, validated_data):
+        location_id = validated_data.pop('location_id', None)
         
-        if User.objects.filter(email=value).exclude(id=user.id).exists():
-            raise serializers.ValidationError(
-                "A user with that email already exists."
-            )
+        if location_id is not None:
+            try:
+                location = Location.objects.get(id=location_id)
+                instance.location = location
+            except Location.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"location_id": "Location not found"}
+                )
+        elif location_id is None and 'location_id' in self.initial_data:
+            instance.location = None
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
+    
+    def validate_location_id(self, value):
+        if value is not None and not Location.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Location not found")
         return value

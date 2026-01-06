@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from users.models import User
-from .models import Publication, Favorite
+from .models import Publication, Favorite, Status
 from .serializer import PublicationSerializer
 
 
@@ -95,13 +95,14 @@ def edit_publication(request, slug):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_favorite(request):
-    user_id = request.data.get('user_id')
+    user_id = request.user.id
     slug = request.data.get('slug')
     
-    if not user_id or not slug:
+    if not slug:
         return Response(
-            {"error": "user_id and slug are required."},
+            {"error": "slug is required."},
             status=status.HTTP_400_BAD_REQUEST
         )
     
@@ -162,3 +163,36 @@ def get_my_favorites(request):
     
     serializer = PublicationSerializer(publications, many=True)
     return Response(serializer.data)
+
+@api_view(['PATCH', 'PUT'])
+@permission_classes([IsAuthenticated])
+def change_publication_status(request, publication_slug):
+    try:
+        publication = Publication.objects.get(slug=publication_slug, author=request.user)
+        
+        new_status_id = request.data.get('status_id')
+        if not new_status_id:
+            return Response(
+                {'error': 'status_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            new_status = Status.objects.get(id=new_status_id)
+        except Publication.DoesNotExist:
+            return Response(
+                {'error': 'Invalid status_id'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        publication.status = new_status
+        publication.save()
+        
+        serializer = PublicationSerializer(publication)
+        return Response(serializer.data)
+    
+    except Publication.DoesNotExist:
+        return Response(
+            {'error': 'Publication not found or you do not have permission to modify it'},
+            status=status.HTTP_404_NOT_FOUND
+        )

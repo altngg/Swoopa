@@ -5,13 +5,26 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import login, logout
 from django.db import transaction
-from .serializer import (LocationSerializer, UserSerializer, RegisterSerializer, LoginSerializer)
+from .serializer import (LocationSerializer, UserSerializer, RegisterSerializer, LoginSerializer, UserUpdateSerializer)
 from .models import Location, User
 
 @api_view(['GET'])
 def get_all_locations(request):
     locations = Location.objects.all()
     serializedData = LocationSerializer(locations, many=True).data
+    return Response(serializedData)
+
+@api_view(['GET'])
+def get_user_by_id(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    serializedData = UserSerializer(user).data
     return Response(serializedData)
 
 class RegisterView(generics.CreateAPIView):
@@ -92,3 +105,28 @@ class UserListView(generics.ListAPIView):
     
     def get_queryset(self):
         return User.objects.filter(is_active=True)
+    
+class UserProfileUpdateView(generics.UpdateAPIView):
+    serializer_class = UserUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        
+        serializer = self.get_serializer(
+            instance, 
+            data=request.data, 
+            partial=partial
+        )
+        serializer.is_valid(raise_exception=True)
+        
+        self.perform_update(serializer)
+        
+        return Response({
+            "user": UserSerializer(instance, context={'request': request}).data,
+            "message": "Profile updated successfully"
+        }, status=status.HTTP_200_OK)

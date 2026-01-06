@@ -22,37 +22,9 @@ def get_my_chats(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_chat_by_id(request, publication_id):
-    current_user = request.user
-
-    try:
-        chat = Chat.objects.get(
-            Q(publication__id=publication_id) &
-            (Q(publication__author=current_user) |
-             Q(author=current_user))
-        )
-    except Chat.DoesNotExist:
-        return Response(
-            {"error": "Chat not found."},
-            status=status.HTTP_404_NOT_FOUND
-        )
-
-    serializedData = ChatSerializer(chat).data
-    return Response(serializedData)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_chat(request):
+def get_chat_by_publication_id(request, publication_id):
     data = request.data.copy()
     current_user = request.user
-
-    publication_id = data.get('publication_id')
-    if not publication_id:
-        return Response(
-            {'error': 'publication_id is required'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
     
     try:
         publication = Publication.objects.get(id=publication_id)
@@ -68,22 +40,30 @@ def create_chat(request):
     ).first()
 
     if existing_chat:
-        serializer = ChatSerializer(existing_chat, context={'request': request})
-        return Response(
-            {
-                'message': 'Chat already exists',
-                'chat': serializer.data
-            },
-            status=status.HTTP_200_OK
-        )
+        messages = Message.objects.filter(chat=existing_chat).order_by('created_at')
+
+        chat_serializer = ChatSerializer(existing_chat, context={'request': request})
+        messages_serializer = MessageSerializer(messages, many=True, context={'request': request})
+        
+        response_data = {
+            "chat": chat_serializer.data,
+            "messages": messages_serializer.data
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
     
     data['publication'] = publication.id
 
     serializer = ChatSerializer(data=data, context={'request': request})
+
+    response_data = {
+            'chat': serializer.data,
+            'messages': []
+    }
     
     if serializer.is_valid():
         serializer.save(author=current_user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(response_data, status=status.HTTP_201_CREATED)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

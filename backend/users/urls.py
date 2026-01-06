@@ -10,8 +10,9 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name='logout'),
     
     path('me/', views.UserProfileView.as_view(), name='current-user'),
+    path('<int:user_id>/', views.get_user_by_id, name='get_user_by_id'),
+    path('me/update/', views.UserProfileUpdateView.as_view(), name='user-profile-update'),
     
     # admin
-    path('users/', views.UserListView.as_view(), name='user-list'),
-    path('token/', obtain_auth_token, name='api_token_auth'),
+    path('all/', views.UserListView.as_view(), name='user-list'),
 ]
