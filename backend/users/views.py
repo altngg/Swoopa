@@ -1,5 +1,132 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from rest_framework import generics, permissions, status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import login, logout
+from django.db import transaction
+from .serializer import (LocationSerializer, UserSerializer, RegisterSerializer, LoginSerializer, UserUpdateSerializer)
+from .models import Location, User
 
-def users(request):
-    return HttpResponse("Hello world!")
+@api_view(['GET'])
+def get_all_locations(request):
+    locations = Location.objects.all()
+    serializedData = LocationSerializer(locations, many=True).data
+    return Response(serializedData)
+
+@api_view(['GET'])
+def get_user_by_id(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    serializedData = UserSerializer(user).data
+    return Response(serializedData)
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [permissions.AllowAny]
+    serializer_class = RegisterSerializer
+    
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        try:
+            user = serializer.save()
+            
+            token, created = Token.objects.get_or_create(user=user)
+            
+            login(request, user)
+            
+            return Response({
+                "user": UserSerializer(user, context=self.get_serializer_context()).data,
+                "token": token.key,
+                "message": "User registered successfully"
+            }, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        
+        user = serializer.validated_data['user']
+        
+        login(request, user)
+        
+        token, created = Token.objects.get_or_create(user=user)
+        
+        return Response({
+            "user": UserSerializer(user, context={'request': request}).data,
+            "token": token.key,
+            "message": "Login successful"
+        })
+
+class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        try:
+            request.user.auth_token.delete()
+        except (AttributeError, Token.DoesNotExist):
+            pass
+        
+        logout(request)
+        
+        return Response(
+            {"message": "Logout successful"},
+            status=status.HTTP_200_OK
+        )
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+    def get_queryset(self):
+        return User.objects.filter(is_active=True)
+    
+class UserProfileUpdateView(generics.UpdateAPIView):
+    serializer_class = UserUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        
+        serializer = self.get_serializer(
+            instance, 
+            data=request.data, 
+            partial=partial
+        )
+        serializer.is_valid(raise_exception=True)
+        
+        self.perform_update(serializer)
+        
+        return Response({
+            "user": UserSerializer(instance, context={'request': request}).data,
+            "message": "Profile updated successfully"
+        }, status=status.HTTP_200_OK)

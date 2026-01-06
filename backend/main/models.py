@@ -28,7 +28,7 @@ class Publication(models.Model):
     slug = models.CharField(unique=True)
     price = models.CharField(blank=True)
     description = models.TextField(blank=True)
-    main_image = models.ImageField(upload_to='publications/main/') 
+    main_image = models.ImageField(upload_to='publications/main/', null=True) 
     created_at = models.DateTimeField(auto_now_add=True)
 
     publication_type = models.ForeignKey(PublicationType, on_delete=models.CASCADE, related_name='publications_type')

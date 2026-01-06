@@ -1,10 +1,10 @@
 from django.contrib import admin
 
 from main.models import Publication
-from users.models import Chat, Geolocation, Message, User
+from users.models import Location, User
 
 class GeolocationAdmin(admin.ModelAdmin):
-    list_display = ['city', 'district']
+    list_display = ['city']
 
 
 class PublicationAdminInline(admin.TabularInline):
@@ -17,16 +17,7 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ['username', 'email', 'location']
     inlines = [PublicationAdminInline]
 
-class ChatAdmin(admin.ModelAdmin):
-    list_display = ['user1', 'user2', 'created_at']
-    search_fields = ['user1', 'user2']
-
-class MessageAdmin(admin.ModelAdmin):
-    list_display = ['chat', 'author', 'text', 'created_at']
-    search_fields = ['chat', 'author']
 
 
-admin.site.register(Geolocation, GeolocationAdmin)
+admin.site.register(Location, GeolocationAdmin)
 admin.site.register(User, UserAdmin)
-admin.site.register(Chat, ChatAdmin)
-admin.site.register(Message, MessageAdmin)
