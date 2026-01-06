@@ -15,12 +15,10 @@ class OfferStatus(models.Model):
     
 class Offer(models.Model):
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
-    offer_author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='offer_author')
-    publication_author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='publication_author')
     status = models.ForeignKey(OfferStatus, on_delete=models.CASCADE)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.publication.name}, {self.offer_author.username}, {self.publication_author.username}, {self.status.name}"
+        return f"{self.publication.name}, {self.chat.author.username}, {self.publication.author.username}, {self.status.name}"
     
