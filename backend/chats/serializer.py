@@ -4,8 +4,8 @@ from main.serializer import PublicationSerializer
 from .models import Chat, Message
 
 class ChatSerializer(serializers.ModelSerializer):
-    publication = PublicationSerializer(read_only=True)
-    author_username = serializers.CharField(source='author.username', read_only=True)
+    publication = PublicationSerializer()
+    author_username = serializers.CharField(source='author.username')
     class Meta:
         model = Chat
         fields = ['id', 'publication', 'created_at', 'author_username']

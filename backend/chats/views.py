@@ -5,6 +5,7 @@ from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 
 from main.models import Publication
+from offers.models import Offer, OfferStatus
 from .serializer import ChatSerializer, MessageSerializer
 from .models import Chat, Message
 
@@ -52,20 +53,19 @@ def get_chat_by_publication_id(request, publication_id):
 
         return Response(response_data, status=status.HTTP_200_OK)
     
-    data['publication'] = publication.id
+    chat = Chat.objects.create(
+        publication=publication,
+        author=current_user
+    )
 
-    serializer = ChatSerializer(data=data, context={'request': request})
+    chat_serializer = ChatSerializer(chat, context={'request': request})
 
     response_data = {
-            'chat': serializer.data,
-            'messages': []
+        'chat': chat_serializer.data,
+        'messages': []
     }
     
-    if serializer.is_valid():
-        serializer.save(author=current_user)
-        return Response(response_data, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(response_data, status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -102,11 +102,22 @@ def add_message(request):
             status=status.HTTP_403_FORBIDDEN
         )
 
+
+    is_first_message = not chat.message_set.exists()
+
+    if (is_first_message):
+        offer_status = OfferStatus.objects.get(id=1)
+        Offer.objects.create(
+            publication = chat.publication,
+            chat = chat,
+            status = offer_status
+        )
+
     message = Message.objects.create(
         chat=chat,
         author=current_user,
         text=text.strip()
     )
-    
+
     serializer = MessageSerializer(message, context={'request': request})
     return Response(serializer.data, status=status.HTTP_201_CREATED)
