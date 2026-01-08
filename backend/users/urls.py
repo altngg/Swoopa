@@ -1,18 +1,22 @@
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
-from . import views
+from .views import get_all_locations, get_user_by_id, register_user, update_user, logout_user, login_user, get_current_user, get_all_users, update_profile_picture, get_user_location
 
 urlpatterns = [
-    path('locations/', views.get_all_locations, name='get_all_locations'),
+    path('locations/', get_all_locations, name='get_all_locations'),
+    path('locations/my', get_user_location, name='get_user_location'),
 
-    path('register/', views.RegisterView.as_view(), name='register'),
-    path('login/', views.LoginView.as_view(), name='login'),
-    path('logout/', views.LogoutView.as_view(), name='logout'),
+    path('register/', register_user, name='register'),
+    path('login/', login_user, name='login'),
+    path('logout/', logout_user, name='logout'),
     
-    path('me/', views.UserProfileView.as_view(), name='current-user'),
-    path('<int:user_id>/', views.get_user_by_id, name='get_user_by_id'),
-    path('me/update/', views.UserProfileUpdateView.as_view(), name='user-profile-update'),
+    path('me/', get_current_user, name='current-user'),
+    path('<int:user_id>/', get_user_by_id, name='get_user_by_id'),
+    path('me/update/', update_user, name='user-profile-update'),
+
+    # form data
+    path('me/update-picture/', update_profile_picture, name='user-profile-update'),
     
     # admin
-    path('all/', views.UserListView.as_view(), name='user-list'),
+    path('all/', get_all_users, name='user-list'),
 ]
