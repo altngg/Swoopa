@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from chats.serializer import ChatSerializer
+from chats.serializer import ChatSerializer, MessageSerializer
+from chats.models import Message
 from .models import Offer, OfferStatus
 from .serializer import OfferSerializer
 
@@ -62,9 +63,17 @@ def get_chat_by_offer_id(request, offer_id):
             )
         
         chat = offer.chat
-        serializedData = ChatSerializer(chat).data
+        messages = Message.objects.filter(chat=chat).order_by('created_at')
+
+        chat_serializer = ChatSerializer(chat, context={'request': request})
+        messages_serializer = MessageSerializer(messages, many=True, context={'request': request})
         
-        return Response(serializedData)
+        response_data = {
+            "chat": chat_serializer.data,
+            "messages": messages_serializer.data
+        }
+        
+        return Response(response_data)
     
     except Offer.DoesNotExist:
         return Response(

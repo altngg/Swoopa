@@ -1,15 +1,18 @@
 from rest_framework import serializers
 
+from main.serializer import PublicationSerializer
 from .models import Chat, Message
 
 class ChatSerializer(serializers.ModelSerializer):
+    publication = PublicationSerializer(read_only=True)
+    author_username = serializers.CharField(source='author.username', read_only=True)
     class Meta:
         model = Chat
-        fields = ['publication', 'created_at']
+        fields = ['id', 'publication', 'created_at', 'author_username']
 
 class MessageSerializer(serializers.ModelSerializer):
-    chat = ChatSerializer(read_only = True)
+    author_username = serializers.CharField(source='author.username', read_only=True)
 
     class Meta:
         model = Message
-        fields = ['chat', 'author', 'text', 'created_at']
+        fields = ['id', 'author_username', 'text', 'created_at']
