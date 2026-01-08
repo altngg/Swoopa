@@ -1,7 +1,8 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from users.models import User
 from .models import Publication, Favorite, Status
@@ -9,12 +10,14 @@ from .serializer import PublicationSerializer
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_all_publications(request):
     publications = Publication.objects.all()
     serializedData = PublicationSerializer(publications, many=True).data
     return Response(serializedData)
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_publication_by_slug(request, slug):
     try:
         publication = Publication.objects.get(slug=slug)
@@ -28,6 +31,7 @@ def get_publication_by_slug(request, slug):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_user_publications(request, user_id):
     try:
         user = User.objects.get(id=user_id)
@@ -50,11 +54,16 @@ def get_my_publications(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def create_publication(request):
     data = request.data.copy()
     
     if 'author' in data:
         data.pop('author')
+
+    additional_images = request.FILES.getlist('additional_images')
+    if additional_images:
+        data.setlist('additional_images', additional_images)
     
     serializer = PublicationSerializer(data=data, context={'request': request})
     
@@ -66,6 +75,7 @@ def create_publication(request):
 
 @api_view(['PATCH', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def edit_publication(request, slug):
     try:
         publication = Publication.objects.get(slug=slug)
@@ -75,6 +85,12 @@ def edit_publication(request, slug):
             status=status.HTTP_404_NOT_FOUND
         )
     
+    if (publication.author_id != request.user.id):
+        return Response(
+            {"error": "You can not edit this publication. Loser."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
     if request.method == 'DELETE':
         publication.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -82,10 +98,16 @@ def edit_publication(request, slug):
     elif request.method in ['PUT', 'PATCH']:
         partial = request.method == 'PATCH'
         
+        data = request.data.copy()
+        additional_images = request.FILES.getlist('additional_images')
+        if additional_images:
+            data.setlist('additional_images', additional_images)
+        
         serializer = PublicationSerializer(
             publication, 
-            data=request.data, 
+            data=data, 
             partial=partial,
+            context={'request': request}
         )
 
         if serializer.is_valid():

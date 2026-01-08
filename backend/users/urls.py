@@ -1,5 +1,4 @@
 from django.urls import path
-from rest_framework.authtoken.views import obtain_auth_token
 from .views import get_all_locations, get_user_by_id, register_user, update_user, logout_user, login_user, get_current_user, get_all_users, update_profile_picture, get_user_location
 
 urlpatterns = [

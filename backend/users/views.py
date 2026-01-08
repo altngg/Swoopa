@@ -1,10 +1,9 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from django.core.files.storage import default_storage
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
-from rest_framework.decorators import parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 import os
 
