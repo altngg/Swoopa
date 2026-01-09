@@ -53,5 +53,9 @@ class PublicationImage(models.Model):
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='favorites')
+
+    class Meta:
+        unique_together = ['user', 'publication']
+        
     def __str__(self):
         return f"{self.user.username} → {self.publication.name}"
