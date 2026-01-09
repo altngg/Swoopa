@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'; // Добавил useEffect
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, message } from 'antd';
+import { Form, Input, message, Select } from 'antd';
 import { MailOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
 import ServiceButton from './ButtonFilled';
 import InvertedButton from './ButtonOutline';
+import { authApi } from '../api/authApi';
 
 interface AuthFormProps {
   initialMode?: 'login' | 'register';
@@ -14,36 +15,73 @@ interface FormValues {
   email: string;
   password: string;
   confirmPassword?: string;
+  location_id?: number;
+}
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+      detail?: string;
+    };
+  };
+  message?: string;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [loading, setLoading] = useState(false);
+  const [locations, setLocations] = useState<Array<{id: number, city: string}>>([]);
   const [form] = Form.useForm<FormValues>();
 
-  // Обновляем mode при изменении initialMode
   useEffect(() => {
     setMode(initialMode);
+    if (initialMode === 'register') {
+      loadLocations();
+    }
   }, [initialMode]);
+
+  const loadLocations = async () => {
+    try {
+      const locationsData = await authApi.getLocations();
+      setLocations(locationsData);
+    } catch (error) {
+      console.error('Ошибка при загрузке локаций:', error);
+    }
+  };
 
   const onFinish = async (values: FormValues) => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (mode === 'login') {
-        console.log('Вход:', values);
-        message.success('Вход выполнен успешно!');
+        const response = await authApi.login({
+          username: values.email,
+          password: values.password,
+        });
+        message.success(response.message);
         navigate('/feed');
       } else {
-        console.log('Регистрация:', values);
-        message.success('Регистрация успешна! Теперь войдите в систему.');
-        setMode('login');
-        form.resetFields();
+        if (!values.location_id && locations.length > 0) {
+          values.location_id = locations[0].id;
+        }
+        
+        const response = await authApi.register({
+          username: values.name!,
+          email: values.email,
+          password: values.password,
+          location: values.location_id || 1,
+        });
+        message.success(response.message);
+        navigate('/feed');
       }
-    } catch {
-      message.error('Ошибка при выполнении операции');
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      const errorMessage = apiError.response?.data?.message || 
+                          apiError.response?.data?.detail || 
+                          apiError.message || 
+                          'Ошибка при выполнении операции';
+      message.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -76,7 +114,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
           >
             <Input
               prefix={<UserOutlined className="text-gray-400" />}
-              placeholder="Имя"
+              placeholder="Имя пользователя"
               size="large"
             />
           </Form.Item>
@@ -95,6 +133,29 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
             size="large"
           />
         </Form.Item>
+
+        {mode === 'register' && (
+          <Form.Item
+            name="location_id"
+            label="Город"
+            rules={[{ required: true, message: 'Пожалуйста, выберите город!' }]}
+          >
+            <Select
+              placeholder="Выберите город"
+              size="large"
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children as unknown as string).toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {locations.map(location => (
+                <Select.Option key={location.id} value={location.id}>
+                  {location.city}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        )}
 
         <Form.Item
           name="password"

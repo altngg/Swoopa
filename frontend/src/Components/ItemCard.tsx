@@ -1,45 +1,68 @@
 import { HeartOutlined, HeartFilled } from '@ant-design/icons';
 import '../index.css';
 import { useNavigate } from 'react-router-dom';
-import type { ItemCardProps } from '../types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { favoritesApi } from '../api/favoritesApi';
+
+interface ItemCardProps {
+  itemId: number;
+  title: string;
+  exchangeItem: string;
+  slug: string;
+  isFree?: boolean
+}
 
 function ItemCard({ itemId, title = 'Название товара', exchangeItem = 'предмет обмена' }: ItemCardProps) {
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Загружаем состояние лайка из localStorage
-  useEffect(() => {
-    const savedLikes = localStorage.getItem('itemLikes');
-    if (savedLikes) {
-      const likes = JSON.parse(savedLikes);
-      if (likes[itemId]) {
-        setIsLiked(true);
-      }
+  const checkIfFavorite = useCallback(async () => {
+    try {
+      const favorites = await favoritesApi.getMyFavorites();
+      const isFavorite = favorites.some(fav => fav.publication.id === itemId);
+      setIsLiked(isFavorite);
+    } catch (error: unknown) {
+      console.error('Ошибка при проверке избранного:', error);
     }
   }, [itemId]);
 
-  // Сохраняем состояние лайка
   useEffect(() => {
-    const savedLikes = localStorage.getItem('itemLikes');
-    const likes = savedLikes ? JSON.parse(savedLikes) : {};
-    
-    if (isLiked) {
-      likes[itemId] = true;
-    } else {
-      delete likes[itemId];
-    }
-    
-    localStorage.setItem('itemLikes', JSON.stringify(likes));
-  }, [isLiked, itemId]);
+    checkIfFavorite();
+  }, [checkIfFavorite]);
 
   const handleCardClick = () => {
+    // TODO: Добавить slug когда будет в API
     navigate(`/item/${itemId}`);
   };
 
-  const handleLikeClick = (e: React.MouseEvent) => {
+  const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsLiked(!isLiked);
+    
+    setLoading(true);
+    try {
+      if (isLiked) {
+        const favorites = await favoritesApi.getMyFavorites();
+        const favorite = favorites.find(fav => fav.publication.id === itemId);
+        if (favorite) {
+          await favoritesApi.remove(favorite.id);
+          setIsLiked(false);
+        }
+      } else {
+        // TODO: Нужен slug для добавления в избранное
+        // await favoritesApi.add(slug);
+        setIsLiked(true);
+      }
+    } catch (error: unknown) {
+      console.error('Ошибка при обновлении избранного:', error);
+      const isUnauthorized = error instanceof Error && 'response' in error && 
+        (error as { response?: { status?: number } }).response?.status === 401;
+      if (isUnauthorized) {
+        navigate('/login');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -47,37 +70,35 @@ function ItemCard({ itemId, title = 'Название товара', exchangeIte
       className="flex flex-col gap-3 p-2 cursor-pointer"
       onClick={handleCardClick}
     >
-      {/* Картинка без лайка */}
       <div className="relative">
         <div 
-          className="w-[14rem] h-[15rem] rounded bg-[#C4C4C4]"
+          className="w-[14rem] h-[15rem] rounded bg-[#C4C4C4] flex items-center justify-center"
           style={{ backgroundColor: '#C4C4C4' }}
-        />
+        >
+          <span className="text-gray-500">Изображение</span>
+        </div>
       </div>
 
-      {/* Текст под картинкой с лайком на одном уровне */}
       <div className="flex flex-col gap-1 w-[14rem]">
         <div className="flex justify-between items-start">
           <h3 className="font-semibold text-[1.125rem] text-gray-900 truncate flex-1">
             {title}
           </h3>
-          {/* Иконка лайка рядом с названием */}
           <button 
-            className={`flex-shrink-0 transition-colors ${
-              isLiked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
-            }`}
+            className={`flex-shrink-0 transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={handleLikeClick}
+            disabled={loading}
           >
             {isLiked ? (
-              <HeartFilled className="text-[1.2rem]" />
+              <HeartFilled className="text-[1.2rem] text-red-500" />
             ) : (
-              <HeartOutlined className="text-[1.2rem]" />
+              <HeartOutlined className="text-[1.2rem] text-gray-600 hover:text-red-500" />
             )}
           </button>
         </div>
         
         <p className="text-[0.875rem] text-gray-600 truncate">
-          Обмен на {exchangeItem}
+          {exchangeItem}
         </p>
       </div>
     </div>

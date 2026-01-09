@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import AuthForm from '../components/AuthForm';
+import Navbar from '../components/Navbar';
 
 const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -8,29 +9,10 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Шапка */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link 
-              to="/" 
-              className="font-galindo text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
-            >
-              SWOOPA
-            </Link>
-            <div className="text-gray-600">
-              <Link to="/" className="hover:text-gray-900 transition-colors">
-                Вернуться на главную
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
-      {/* Основное содержимое */}
       <main className="flex-1 flex items-center justify-center py-12">
         <div className="w-full max-w-4xl flex">
-          {/* Левая часть - информация */}
           <div className="flex-1 hidden lg:flex flex-col justify-center p-12 bg-gray-100 rounded-l-2xl">
             <h1 className="text-3xl font-bold text-gray-900 mb-6">
               Добро пожаловать в SWOOPA
@@ -63,14 +45,12 @@ const LoginPage: React.FC = () => {
             </ul>
           </div>
 
-          {/* Правая часть - форма */}
           <div className="flex-1 bg-white p-8 lg:p-12 rounded-r-2xl shadow-lg">
             <AuthForm initialMode={initialMode} />
           </div>
         </div>
       </main>
 
-      {/* Футер */}
       <footer className="bg-white border-t border-gray-200 py-6">
         <div className="container mx-auto px-4">
           <div className="text-center text-gray-500 text-sm">
