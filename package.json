@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "@fontsource/galindo": "^5.2.8"
+    "@fontsource/galindo": "^5.2.8",
+    "axios": "^1.13.2"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.9.36"
   }
 }

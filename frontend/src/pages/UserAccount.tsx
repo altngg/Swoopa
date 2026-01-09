@@ -1,21 +1,22 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Avatar, Button, Input, Modal, Badge } from 'antd';
-import { UserOutlined, EditOutlined, LogoutOutlined, DeleteOutlined, BellOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Avatar, Button, Input, Modal, Badge, message, Select, Spin } from 'antd';
+import { 
+  UserOutlined, EditOutlined, LogoutOutlined, DeleteOutlined, 
+  BellOutlined, CheckOutlined, CloseOutlined 
+} from '@ant-design/icons';
 import DialoguesList from '../components/DialoguesList';
 import DialogueWindow from '../components/DialogueWindow';
 import ListingCard from '../components/ListingCard';
+import { authApi, type User } from '../api/authApi';
+import { publicationsApi, type Publication } from '../api/publicationsApi';
+import { favoritesApi, type Favorite } from '../api/favoritesApi';
+
+const { Option } = Select;
 
 interface UserAccountProps {
   initialTab?: 'ads' | 'messages' | 'offers';
-}
-
-interface AdItem {
-  itemId: number;
-  title: string;
-  exchangeItem: string;
-  userName: string;
-  isFree?: boolean;
 }
 
 interface Dialog {
@@ -30,7 +31,7 @@ interface Dialog {
   status?: 'pending' | 'accepted' | 'rejected';
 }
 
-type DialogItem = Dialog
+type DialogItem = Dialog;
 
 interface OfferItem {
   id: number;
@@ -46,6 +47,15 @@ interface OfferItem {
   createdAt: string;
 }
 
+interface AdItem {
+  itemId: number;
+  title: string;
+  exchangeItem: string;
+  userName: string;
+  isFree?: boolean;
+  slug?: string;
+}
+
 const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,78 +63,26 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const [selectedDialog, setSelectedDialog] = useState<DialogItem | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingCity, setIsEditingCity] = useState(false);
-  const [userName, setUserName] = useState('Максим Нахивич');
-  const [userCity, setUserCity] = useState('Москва');
-  const [tempName, setTempName] = useState(userName);
-  const [tempCity, setTempCity] = useState(userCity);
+  const [userName, setUserName] = useState('');
+  const [userCity, setUserCity] = useState('');
+  const [tempName, setTempName] = useState('');
+  const [tempCity, setTempCity] = useState('');
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [incomingOffers, setIncomingOffers] = useState<OfferItem[]>([]);
-  
-  const [userAds, setUserAds] = useState<AdItem[]>([
-    { 
-      itemId: 1, 
-      title: 'Мока кофеварка', 
-      exchangeItem: 'Урок английского', 
-      userName: 'Максим',
-      isFree: false
-    },
-    { 
-      itemId: 2, 
-      title: 'Книги по программированию', 
-      exchangeItem: 'Кофемашина', 
-      userName: 'Максим',
-      isFree: false
-    },
-    { 
-      itemId: 3, 
-      title: 'Старый журнальный столик', 
-      exchangeItem: '', 
-      userName: 'Максим',
-      isFree: true
-    },
-  ]);
-
-  const mockDialogs: Dialog[] = [
-    {
-      id: '1',
-      userName: 'Петр',
-      lastMessage: 'Хей, вам еще интересен товар?',
-      unreadCount: 2,
-      timestamp: '10:30 AM',
-      itemId: 1,
-      itemTitle: 'Мока кофеварка',
-      offerType: 'exchange',
-      status: 'pending'
-    },
-    {
-      id: '2', 
-      userName: 'Ссаныч',
-      lastMessage: 'Спасиб за сделку, книга класс',
-      timestamp: 'Вчера',
-      itemId: 2,
-      itemTitle: 'Книги по программированию',
-      offerType: 'exchange',
-      status: 'accepted'
-    },
-    {
-      id: '3',
-      userName: 'Анна',
-      lastMessage: 'Когда можем встретиться?',
-      unreadCount: 1,
-      timestamp: 'Сегодня',
-      itemId: 3,
-      itemTitle: 'Старый журнальный столик',
-      offerType: 'free',
-      status: 'pending'
-    },
-  ];
+  const [userAds, setUserAds] = useState<AdItem[]>([]);
+  const [locations, setLocations] = useState<Array<{id: number, city: string}>>([]);
+  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
 
   useEffect(() => {
-    // Загрузка входящих предложений
-    loadIncomingOffers();
+    loadUserData();
+    loadUserPublications();
+    loadLocations();
+    loadFavorites();
     
-    // Определение активной вкладки из URL
     if (location.pathname === '/user-account/messages') {
       setActiveTab('messages');
     } else if (location.pathname === '/user-account/offers') {
@@ -134,35 +92,69 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
     }
   }, [location]);
 
-  const loadIncomingOffers = () => {
-    // Мок данные входящих предложений
-    const mockOffers: OfferItem[] = [
-      {
-        id: 1,
-        fromUserId: 'user456',
-        fromUserName: 'Анна Петрова',
-        toUserId: 'user123',
-        itemId: 1,
-        itemTitle: 'Мока кофеварка',
-        offerType: 'exchange',
-        selectedItemId: 4,
-        selectedItemTitle: 'Книга "JavaScript для профессионалов"',
-        status: 'pending',
-        createdAt: '2024-01-15 14:30'
-      },
-      {
-        id: 2,
-        fromUserId: 'user789',
-        fromUserName: 'Иван Сидоров',
-        toUserId: 'user123',
-        itemId: 3,
-        itemTitle: 'Старый журнальный столик',
-        offerType: 'free',
-        status: 'pending',
-        createdAt: '2024-01-16 09:15'
-      }
-    ];
-    setIncomingOffers(mockOffers);
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      const user = await authApi.getCurrentUser();
+      setUserName(user.username);
+      setUserCity(user.location.city);
+      setSelectedLocationId(user.location.id);
+      setTempName(user.username);
+      setTempCity(user.location.city);
+      setUserAvatar(user.profile_picture);
+    } catch (error) {
+      message.error('Ошибка при загрузке данных пользователя');
+      navigate('/login');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadUserPublications = async () => {
+    try {
+      const publications = await publicationsApi.getAll();
+      const currentUser = await authApi.getCurrentUser();
+      
+      const userPublications = publications
+        .filter(pub => pub.author_id === currentUser.id)
+        .map(pub => ({
+          itemId: pub.id,
+          title: pub.name,
+          exchangeItem: pub.price === "0" ? "Бесплатно" : `Цена: ${pub.price}`,
+          userName: pub.author_username,
+          isFree: pub.price === "0",
+          slug: pub.slug
+        }));
+      
+      setUserAds(userPublications);
+    } catch (error) {
+      console.error('Ошибка при загрузке публикаций:', error);
+      message.error('Не удалось загрузить ваши объявления');
+    }
+  };
+
+  const loadLocations = async () => {
+    try {
+      const locationsData = await authApi.getLocations();
+      setLocations(locationsData);
+    } catch (error) {
+      console.error('Ошибка при загрузке локаций:', error);
+    }
+  };
+
+  const loadFavorites = async () => {
+    try {
+      const favoritesData = await favoritesApi.getMyFavorites();
+      setFavorites(favoritesData);
+    } catch (error) {
+      console.error('Ошибка при загрузке избранного:', error);
+    }
+  };
+
+  const loadIncomingOffers = async () => {
+    // TODO: Реализовать API для загрузки предложений
+    // Пока оставляем пустой массив
+    setIncomingOffers([]);
   };
 
   const handleCloseChat = () => {
@@ -188,30 +180,53 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
     setIsEditingCity(true);
   };
 
-  const handleNameSave = () => {
-    if (tempName.trim()) {
-      setUserName(tempName.trim());
+  const handleNameSave = async () => {
+    if (tempName.trim() && tempName !== userName) {
+      try {
+        const response = await authApi.updateUser({ username: tempName.trim() });
+        setUserName(tempName.trim());
+        message.success(response.message);
+      } catch (error) {
+        message.error('Ошибка при обновлении имени');
+      }
     }
     setIsEditingName(false);
   };
 
-  const handleCitySave = () => {
-    if (tempCity.trim()) {
-      setUserCity(tempCity.trim());
+  const handleCitySave = async () => {
+    if (tempCity.trim() && tempCity !== userCity) {
+      try {
+        const location = locations.find(loc => loc.city === tempCity);
+        if (location) {
+          const response = await authApi.updateUser({ location_id: location.id });
+          setUserCity(tempCity.trim());
+          setSelectedLocationId(location.id);
+          message.success(response.message);
+        }
+      } catch (error) {
+        message.error('Ошибка при обновлении города');
+      }
     }
     setIsEditingCity(false);
   };
 
-  const handleLogout = () => {
-    console.log('Выход из аккаунта');
-    setShowLogoutConfirm(false);
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+      localStorage.removeItem('access_token');
+      setShowLogoutConfirm(false);
+      message.success('Вы успешно вышли из системы');
+      navigate('/login');
+    } catch (error) {
+      message.error('Ошибка при выходе из системы');
+    }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
+    // TODO: Реализовать API для удаления аккаунта
     console.log('Удаление аккаунта');
     setShowDeleteConfirm(false);
-    navigate('/');
+    message.warning('Функция удаления аккаунта временно недоступна');
   };
 
   const handleDialogClick = (dialog: Dialog) => {
@@ -229,45 +244,40 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
     setSelectedDialog(typedDialog);
   };
 
-  const handleRemoveAd = (itemId: number) => {
-    setUserAds(prevAds => prevAds.filter(ad => ad.itemId !== itemId));
+  const handleRemoveAd = async (itemId: number) => {
+    try {
+      const ad = userAds.find(ad => ad.itemId === itemId);
+      if (ad?.slug) {
+        await publicationsApi.delete(ad.slug);
+        setUserAds(prevAds => prevAds.filter(ad => ad.itemId !== itemId));
+        message.success('Объявление удалено');
+      }
+    } catch (error) {
+      message.error('Ошибка при удалении объявления');
+    }
   };
 
-  const handleOfferResponse = (offerId: number, status: 'accepted' | 'rejected') => {
-    // Обновление статуса предложения
+  const handleRemoveFavorite = async (favoriteId: number) => {
+    try {
+      await favoritesApi.remove(favoriteId);
+      setFavorites(prev => prev.filter(fav => fav.id !== favoriteId));
+      message.success('Удалено из избранного');
+    } catch (error) {
+      message.error('Ошибка при удалении из избранного');
+    }
+  };
+
+  const handleOfferResponse = async (offerId: number, status: 'accepted' | 'rejected') => {
+    // TODO: Реализовать API для ответа на предложения
+    console.log(`Ответ на предложение ${offerId}: ${status}`);
+    
+    // Обновляем локальное состояние
     setIncomingOffers(prev => 
       prev.map(offer => 
         offer.id === offerId ? { ...offer, status } : offer
       )
     );
-
-    // Создание диалога при принятии предложения
-    if (status === 'accepted') {
-      const offer = incomingOffers.find(o => o.id === offerId);
-      if (offer) {
-        createDialogFromOffer(offer);
-      }
-    }
-  };
-
-  const createDialogFromOffer = (offer: OfferItem) => {
-    // Создание нового диалога из предложения
-    const newDialog: Dialog = {
-      id: `offer-${offer.id}`,
-      userName: offer.fromUserName,
-      lastMessage: `Предложение ${offer.offerType === 'exchange' ? 'обмена' : 'забрать даром'}`,
-      timestamp: 'Сейчас',
-      itemId: offer.itemId,
-      itemTitle: offer.itemTitle,
-      offerType: offer.offerType,
-      status: 'accepted'
-    };
-
-    // Здесь должен быть API запрос для сохранения диалога
-    console.log('Создан диалог:', newDialog);
-    
-    // Добавляем новый диалог в список
-    // В реальном приложении здесь был бы запрос к API
+    message.success(`Предложение ${status === 'accepted' ? 'принято' : 'отклонено'}`);
   };
 
   const navigateToTab = (tab: 'ads' | 'messages' | 'offers') => {
@@ -279,6 +289,36 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
     return incomingOffers.filter(offer => offer.status === 'pending').length;
   };
 
+  const handleAvatarUpload = async (file: File) => {
+    try {
+      const response = await authApi.updateAvatar(file);
+      setUserAvatar(response.user.profile_picture);
+      message.success('Аватар обновлен');
+    } catch (error) {
+      message.error('Ошибка при обновлении аватара');
+    }
+  };
+
+  // Получаем избранные объявления для отображения
+  const getFavoriteAds = (): AdItem[] => {
+    return favorites.map(fav => ({
+      itemId: fav.publication.id,
+      title: fav.publication.name,
+      exchangeItem: fav.publication.price === "0" ? "Бесплатно" : `Цена: ${fav.publication.price}`,
+      userName: 'Автор', // Можно добавить получение имени автора если нужно
+      isFree: fav.publication.price === "0",
+      slug: fav.publication.slug
+    }));
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <h1 className="text-2xl font-bold mb-6 text-gray-900 pl-[2rem]">Личный кабинет</h1>
@@ -288,9 +328,30 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
           <div className="flex flex-col items-center mb-6">
             <Avatar 
               size={142}
-              icon={<UserOutlined />}
+              icon={!userAvatar && <UserOutlined />}
+              src={userAvatar}
               className="bg-gray-300 mb-4"
             />
+            
+            <div className="mt-2 mb-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleAvatarUpload(e.target.files[0]);
+                  }
+                }}
+                className="hidden"
+                id="avatar-upload"
+              />
+              <label 
+                htmlFor="avatar-upload" 
+                className="text-blue-600 text-sm cursor-pointer hover:text-blue-800"
+              >
+                Изменить фото
+              </label>
+            </div>
             
             <div className="flex items-center justify-center gap-2 mb-2 w-full">
               {isEditingName ? (
@@ -328,14 +389,22 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
             <div className="flex items-center justify-center gap-2 mb-8 w-full">
               {isEditingCity ? (
                 <div className="flex items-center gap-2 w-full">
-                  <Input
+                  <Select
                     value={tempCity}
-                    onChange={(e) => setTempCity(e.target.value)}
-                    onPressEnter={handleCitySave}
-                    onBlur={handleCitySave}
-                    autoFocus
-                    className="flex-1"
-                  />
+                    onChange={(value) => setTempCity(value as string)}
+                    style={{ width: '100%' }}
+                    showSearch
+                    placeholder="Выберите город"
+                    filterOption={(input, option) =>
+                      (option?.children as unknown as string).toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    {locations.map(location => (
+                      <Option key={location.id} value={location.city}>
+                        {location.city}
+                      </Option>
+                    ))}
+                  </Select>
                   <Button 
                     type="primary" 
                     size="small"
@@ -522,7 +591,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
                           </Button>
                           <Button
                             onClick={() => {
-                              // Переход к диалогу или создание нового
                               navigateToTab('messages');
                             }}
                           >
@@ -540,33 +608,21 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
           {activeTab === 'messages' && (
             <div className="flex gap-6">
               <div className="w-96">
-                <DialoguesList 
-                  dialogs={mockDialogs}
-                  onDialogClick={handleDialogClick}
-                  selectedDialogId={selectedDialog?.id}
-                />
+                {/* Пока нет API для диалогов, оставляем заглушку */}
+                <div className="bg-white rounded-lg p-4">
+                  <p className="text-gray-500 text-center">
+                    Раздел сообщений будет доступен позже
+                  </p>
+                </div>
               </div>
               
               <div className="flex-1">
-                {selectedDialog ? (
-                  <div className="h-[calc(100vh-200px)] pb-3">
-                    <DialogueWindow 
-                      onClose={handleCloseChat}
-                      itemId={selectedDialog.itemId}
-                      dialogUserName={selectedDialog.userName}
-                      lastMessage={selectedDialog.lastMessage}
-                      offerType={selectedDialog.offerType}
-                      offerStatus={selectedDialog.status}
-                    />
+                <div className="h-[calc(100vh-200px)] flex items-center justify-center bg-white rounded-lg border border-gray-200">
+                  <div className="text-center text-gray-500">
+                    <p className="text-lg mb-2">Выберите диалог</p>
+                    <p className="text-sm">или начните новый разговор</p>
                   </div>
-                ) : (
-                  <div className="h-[calc(100vh-200px)] flex items-center justify-center bg-white rounded-lg border border-gray-200">
-                    <div className="text-center text-gray-500">
-                      <p className="text-lg mb-2">Выберите диалог</p>
-                      <p className="text-sm">или начните новый разговор</p>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           )}
