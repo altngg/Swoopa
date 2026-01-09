@@ -5,6 +5,7 @@ import { MailOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
 import ServiceButton from './ButtonFilled';
 import InvertedButton from './ButtonOutline';
 import { authApi } from '../api/authApi';
+import { useAuth } from '../context/AuthContext';
 
 interface AuthFormProps {
   initialMode?: 'login' | 'register';
@@ -30,6 +31,7 @@ interface ApiError {
 
 const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [loading, setLoading] = useState(false);
   const [locations, setLocations] = useState<Array<{id: number, city: string}>>([]);
@@ -60,6 +62,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
           password: values.password,
         });
         message.success(response.message);
+        login();
         navigate('/feed');
       } else {
         if (!values.location_id && locations.length > 0) {
@@ -73,6 +76,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = 'login' }) => {
           location: values.location_id || 1,
         });
         message.success(response.message);
+        login();
         navigate('/feed');
       }
     } catch (error: unknown) {

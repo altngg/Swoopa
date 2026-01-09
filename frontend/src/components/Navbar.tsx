@@ -1,34 +1,68 @@
 import '../index.css'
 import { EnvironmentOutlined, HeartFilled, MessageOutlined, UserOutlined, DownOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import React, { useState } from 'react';
-import { Modal, Input } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Modal, Input, Spin } from 'antd';
+import { authApi } from '../api/authApi';
+import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
   const navigate = useNavigate();
-  const isLoggedIn = false; // Временно false для тестирования логина
+  const { isLoggedIn, logout } = useAuth();
   const [selectedCity, setSelectedCity] = useState('Москва');
+  const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
   const [searchCity, setSearchCity] = useState('');
+  const [availableCities, setAvailableCities] = useState<Array<{id: number, city: string}>>([]);
+  const [loadingCities, setLoadingCities] = useState(false);
   
-  // Список доступных городов
-  const availableCities = [
-    'Москва',
-    'Санкт-Петербург',
-    'Новосибирск',
-    'Екатеринбург',
-    'Казань',
-    'Нижний Новгород',
-    'Челябинск',
-    'Самара',
-    'Омск',
-    'Ростов-на-Дону',
-    'Уфа',
-    'Красноярск',
-    'Воронеж',
-    'Пермь',
-    'Волгоград'
-  ];
+  useEffect(() => {
+    // Загружаем города из базы данных
+    loadCities();
+    
+    // Пытаемся получить сохраненный город пользователя
+    const savedCity = localStorage.getItem('selected_city');
+    const savedCityId = localStorage.getItem('selected_city_id');
+    if (savedCity) {
+      setSelectedCity(savedCity);
+      if (savedCityId) {
+        setSelectedCityId(parseInt(savedCityId));
+      }
+    }
+  }, []);
+
+  const loadCities = async () => {
+    try {
+      setLoadingCities(true);
+      const cities = await authApi.getLocations();
+      setAvailableCities(cities);
+      
+      const savedCityId = localStorage.getItem('selected_city_id');
+      if (savedCityId) {
+        const city = cities.find(c => c.id === parseInt(savedCityId));
+        if (city) {
+          setSelectedCity(city.city);
+          setSelectedCityId(city.id);
+        }
+      } else if (cities.length > 0) {
+        setSelectedCity(cities[0].city);
+        setSelectedCityId(cities[0].id);
+        localStorage.setItem('selected_city', cities[0].city);
+        localStorage.setItem('selected_city_id', cities[0].id.toString());
+      }
+    } catch (error) {
+      console.error('Ошибка при загрузке городов:', error);
+      setAvailableCities([
+        { id: 1, city: 'Москва' },
+        { id: 2, city: 'Санкт-Петербург' },
+        { id: 3, city: 'Новосибирск' },
+        { id: 4, city: 'Екатеринбург' },
+        { id: 5, city: 'Казань' },
+      ]);
+    } finally {
+      setLoadingCities(false);
+    }
+  };
 
   const handleFavoritesClick = () => {
     if (!isLoggedIn) {
@@ -66,17 +100,25 @@ function Navbar() {
     setIsCityModalOpen(true);
   };
 
-  const handleCitySelect = (city: string) => {
-    setSelectedCity(city);
+  const handleCitySelect = (cityId: number, cityName: string) => {
+    setSelectedCity(cityName);
+    setSelectedCityId(cityId);
     setIsCityModalOpen(false);
     setSearchCity('');
     
-    // Здесь можно добавить логику для изменения данных в зависимости от города
-    console.log(`Выбран город: ${city}`);
+    localStorage.setItem('selected_city', cityName);
+    localStorage.setItem('selected_city_id', cityId.toString());
+    
+    console.log(`Выбран город: ${cityName} (ID: ${cityId})`);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   const filteredCities = availableCities.filter(city =>
-    city.toLowerCase().includes(searchCity.toLowerCase())
+    city.city.toLowerCase().includes(searchCity.toLowerCase())
   );
 
   return (
@@ -125,22 +167,26 @@ function Navbar() {
                 color: '#3b82f6'
               }}/>
             </div>
-            <div className="flex gap-3 text-sm">
-              <div className="cursor-pointer" onClick={handleMessagesClick}>
-                <MessageOutlined style={{ 
-                  fontSize: '20px', 
-                  paddingRight: '1rem',
-                  color: '#3b82f6'
-                }}/>
-              </div>
-              <div className="cursor-pointer" onClick={handleUserClick}>
-                <UserOutlined style={{ 
-                  fontSize: '20px', 
-                  paddingRight: '2.5rem',
-                  color: '#3b82f6'
-                }}/>
-              </div>
+            <div className="cursor-pointer" onClick={handleMessagesClick}>
+              <MessageOutlined style={{ 
+                fontSize: '20px', 
+                paddingRight: '1rem',
+                color: '#3b82f6'
+              }}/>
             </div>
+            <div className="cursor-pointer" onClick={handleUserClick}>
+              <UserOutlined style={{ 
+                fontSize: '20px', 
+                paddingRight: '1rem',
+                color: '#3b82f6'
+              }}/>
+            </div>
+            <button 
+              onClick={handleLogout}
+              className="text-[1rem] pr-[2.5rem] font-inter cursor-pointer hover:text-blue-600 transition-colors"
+            >
+              Выйти
+            </button>
           </div>
         )}
       </nav>
@@ -165,7 +211,12 @@ function Navbar() {
           />
           
           <div className="max-h-[300px] overflow-y-auto">
-            {filteredCities.length === 0 ? (
+            {loadingCities ? (
+              <div className="text-center py-4">
+                <Spin size="small" />
+                <p className="text-gray-500 mt-2">Загрузка городов...</p>
+              </div>
+            ) : filteredCities.length === 0 ? (
               <div className="text-center py-4 text-gray-500">
                 Город не найден
               </div>
@@ -173,21 +224,21 @@ function Navbar() {
               <div className="space-y-2">
                 {filteredCities.map((city) => (
                   <div
-                    key={city}
+                    key={city.id}
                     className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedCity === city
+                      selectedCityId === city.id
                         ? 'bg-blue-50 border border-blue-200'
                         : 'hover:bg-gray-100'
                     }`}
-                    onClick={() => handleCitySelect(city)}
+                    onClick={() => handleCitySelect(city.id, city.city)}
                   >
                     <div className="flex items-center justify-between">
                       <span className={`font-medium ${
-                        selectedCity === city ? 'text-blue-600' : 'text-gray-900'
+                        selectedCityId === city.id ? 'text-blue-600' : 'text-gray-900'
                       }`}>
-                        {city}
+                        {city.city}
                       </span>
-                      {selectedCity === city && (
+                      {selectedCityId === city.id && (
                         <span className="text-blue-500 text-sm">✓</span>
                       )}
                     </div>
@@ -201,7 +252,6 @@ function Navbar() {
             <p className="text-sm text-gray-600 mb-2">Не нашли свой город?</p>
             <button
               onClick={() => {
-                // Можно добавить функционал для предложения города
                 console.log('Предложить город');
                 setIsCityModalOpen(false);
               }}

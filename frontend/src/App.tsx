@@ -9,34 +9,37 @@ import Profile from './pages/Profile';
 import SearchField from './components/SearchField';
 import AddPost from './pages/AddPost';
 import LoginPage from './pages/LoginPage';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="*" element={
-            <>
-              <Navbar />
-              <SearchField />
-              <Routes>
-                <Route path="/" element={<Feed />} />
-                <Route path="/feed" element={<Feed />} />
-                <Route path="/favorites" element={<Favorites />} />
-                <Route path="/user-account" element={<UserAccount initialTab="ads" />} />
-                <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
-                <Route path="/user-account/offers" element={<UserAccount initialTab="offers" />} />
-                <Route path="/item/:id" element={<ItemPreview />} />
-                <Route path="/item/free/:id" element={<ItemPreview isFree={true} />} />
-                <Route path="/add-post" element={<AddPost />} />
-                <Route path="/profile" element={<Profile />} />
-              </Routes>
-            </>
-          } />
-        </Routes>
-      </div>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="*" element={
+              <>
+                <Navbar />
+                <SearchField />
+                <Routes>
+                  <Route path="/" element={<Feed />} />
+                  <Route path="/feed" element={<Feed />} />
+                  <Route path="/favorites" element={<Favorites />} />
+                  <Route path="/user-account" element={<UserAccount initialTab="ads" />} />
+                  <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
+                  <Route path="/user-account/offers" element={<UserAccount initialTab="offers" />} />
+                  <Route path="/item/:id" element={<ItemPreview />} />
+                  <Route path="/item/free/:id" element={<ItemPreview isFree={true} />} />
+                  <Route path="/add-post" element={<AddPost />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Routes>
+              </>
+            } />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
