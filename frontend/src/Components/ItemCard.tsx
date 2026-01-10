@@ -9,10 +9,18 @@ interface ItemCardProps {
   title: string;
   exchangeItem: string;
   slug: string;
-  isFree?: boolean
+  isFree?: boolean;
+  mainImage?: string | null;
 }
 
-function ItemCard({ itemId, title = 'Название товара', exchangeItem = 'предмет обмена' }: ItemCardProps) {
+function ItemCard({ 
+  itemId, 
+  title = 'Название товара', 
+  exchangeItem = 'предмет обмена',
+  slug,
+  isFree,
+  mainImage
+}: ItemCardProps) {
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,7 +31,11 @@ function ItemCard({ itemId, title = 'Название товара', exchangeIte
       const isFavorite = favorites.some(fav => fav.publication.id === itemId);
       setIsLiked(isFavorite);
     } catch (error: unknown) {
-      console.error('Ошибка при проверке избранного:', error);
+      // Если не авторизован, не показываем ошибку
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status !== 401) {
+        console.error('Ошибка при проверке избранного:', error);
+      }
     }
   }, [itemId]);
 
@@ -32,8 +44,7 @@ function ItemCard({ itemId, title = 'Название товара', exchangeIte
   }, [checkIfFavorite]);
 
   const handleCardClick = () => {
-    // TODO: Добавить slug когда будет в API
-    navigate(`/item/${itemId}`);
+    navigate(`/item/${slug}`);
   };
 
   const handleLikeClick = async (e: React.MouseEvent) => {
@@ -42,6 +53,7 @@ function ItemCard({ itemId, title = 'Название товара', exchangeIte
     setLoading(true);
     try {
       if (isLiked) {
+        // Удаляем из избранного
         const favorites = await favoritesApi.getMyFavorites();
         const favorite = favorites.find(fav => fav.publication.id === itemId);
         if (favorite) {
@@ -49,15 +61,15 @@ function ItemCard({ itemId, title = 'Название товара', exchangeIte
           setIsLiked(false);
         }
       } else {
-        // TODO: Нужен slug для добавления в избранное
-        // await favoritesApi.add(slug);
+        // Добавляем в избранное
+        await favoritesApi.add(slug);
         setIsLiked(true);
       }
     } catch (error: unknown) {
       console.error('Ошибка при обновлении избранного:', error);
-      const isUnauthorized = error instanceof Error && 'response' in error && 
-        (error as { response?: { status?: number } }).response?.status === 401;
-      if (isUnauthorized) {
+      const err = error as { response?: { status?: number } };
+      if (err.response?.status === 401) {
+        // Если не авторизован, перенаправляем на логин
         navigate('/login');
       }
     } finally {
@@ -65,17 +77,35 @@ function ItemCard({ itemId, title = 'Название товара', exchangeIte
     }
   };
 
+  const getImageUrl = (path: string | null | undefined) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `http://localhost:8000${path}`;
+  };
+
+  const imageUrl = getImageUrl(mainImage);
+
   return (
     <div 
-      className="flex flex-col gap-3 p-2 cursor-pointer"
+      className="flex flex-col gap-3 p-2 cursor-pointer hover:shadow-lg transition-shadow rounded-lg"
       onClick={handleCardClick}
     >
       <div className="relative">
-        <div 
-          className="w-[14rem] h-[15rem] rounded bg-[#C4C4C4] flex items-center justify-center"
-          style={{ backgroundColor: '#C4C4C4' }}
-        >
-          <span className="text-gray-500">Изображение</span>
+        <div className="w-[14rem] h-[15rem] rounded overflow-hidden bg-gray-200 flex items-center justify-center">
+          {imageUrl ? (
+            <img 
+              src={imageUrl}
+              alt={title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Если изображение не загрузилось, показываем заглушку
+                e.currentTarget.src = 'https://via.placeholder.com/224x240?text=Нет+изображения';
+                e.currentTarget.className = 'w-full h-full object-contain p-4';
+              }}
+            />
+          ) : (
+            <span className="text-gray-500">Нет изображения</span>
+          )}
         </div>
       </div>
 
@@ -98,7 +128,7 @@ function ItemCard({ itemId, title = 'Название товара', exchangeIte
         </div>
         
         <p className="text-[0.875rem] text-gray-600 truncate">
-          {exchangeItem}
+          {isFree ? 'Бесплатно' : exchangeItem}
         </p>
       </div>
     </div>

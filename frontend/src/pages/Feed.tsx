@@ -102,16 +102,25 @@ const Feed = () => {
               xl:grid-cols-6
               overflow-y-auto
             ">
-              {filteredAndSortedPublications.map((pub) => (
-                <ItemCard 
-                  key={pub.id}
-                  itemId={pub.id}
-                  title={pub.name}
-                  exchangeItem={pub.price === "0" ? "Бесплатно" : `Цена: ${pub.price}`}
-                  slug={pub.slug}
-                  isFree={parseFloat(pub.price) === 0}
-                />
-              ))}
+              {filteredAndSortedPublications.map((pub) => {
+                // Преобразуем images в правильный формат
+                const imagesArray = pub.images ? 
+                  pub.images.map(img => typeof img === 'string' ? { image: img } : img) 
+                  : [];
+
+                return (
+                  <ItemCard 
+                    key={pub.id}
+                    itemId={pub.id}
+                    title={pub.name}
+                    exchangeItem={pub.price}
+                    slug={pub.slug}
+                    isFree={parseFloat(pub.price) === 0}
+                    mainImage={pub.main_image}
+                    images={imagesArray} // Теперь это массив объектов { image: string }
+                  />
+                );
+              })}
             </div>
 
             {isSearchActive && searchQuery && filteredAndSortedPublications.length === 0 && (

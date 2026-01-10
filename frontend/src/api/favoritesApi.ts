@@ -21,7 +21,7 @@ export interface Favorite {
 export const favoritesApi = {
   // Добавление в избранное
   add: async (slug: string): Promise<{ message: string; favorite_id: number }> => {
-    const response = await apiClient.post('/main/favorites/add', { slug });
+    const response = await apiClient.post('/main/favorites/add/', { slug });
     return response.data;
   },
 
@@ -33,7 +33,7 @@ export const favoritesApi = {
 
   // Получение избранных текущего пользователя
   getMyFavorites: async (): Promise<Favorite[]> => {
-    const response = await apiClient.get('/main/favorites/my');
+    const response = await apiClient.get('/main/favorites/my/');
     return response.data;
   },
 };

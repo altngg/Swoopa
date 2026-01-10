@@ -6,22 +6,24 @@ interface ListingCardProps {
   title?: string;
   exchangeItem?: string;
   userName?: string;
-  isFree?: boolean; // Добавлено новое свойство
+  isFree?: boolean;
   onOpenChat?: () => void;
   onRemove?: () => void;
   onEdit?: () => void;
   mode?: 'favorites' | 'user-account';
+  mainImage?: string | null; // Добавьте это
 }
 
 function ListingCard({ 
   title = 'title', 
   exchangeItem = 'exchangeItem', 
   userName = 'Имя пользователя',
-  isFree = false, // Значение по умолчанию
+  isFree = false,
   onOpenChat,
   onRemove,
   onEdit,
-  mode = 'favorites'
+  mode = 'favorites',
+  mainImage // Примите mainImage
 }: ListingCardProps) {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -61,6 +63,7 @@ function ListingCard({
     navigate('/profile');
   };
 
+
   return (
     <>
       <div 
@@ -69,9 +72,23 @@ function ListingCard({
       >
         {/* Картинка 164x164px */}
         <div 
-          className="flex-shrink-0 w-[10.25rem] h-[10.25rem] rounded bg-[#C4C4C4]"
-          style={{ backgroundColor: '#C4C4C4' }}
-        />
+          className="flex-shrink-0 w-[10.25rem] h-[10.25rem] rounded overflow-hidden bg-gray-200"
+        >
+          {mainImage ? (
+            <img 
+              src={`http://localhost:8000${mainImage}`}
+              alt={title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-200">
+              <span className="text-gray-500">Нет изображения</span>
+            </div>
+          )}
+        </div>
 
         <div className="flex-1 flex flex-col w-fit-content">
           <div className="flex justify-between items-start">

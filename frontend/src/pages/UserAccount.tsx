@@ -48,6 +48,7 @@ interface OfferItem {
 }
 
 interface AdItem {
+  mainImage: string | null | undefined;
   itemId: number;
   title: string;
   exchangeItem: string;
@@ -123,7 +124,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
           exchangeItem: pub.price === "0" ? "Бесплатно" : `Цена: ${pub.price}`,
           userName: pub.author_username,
           isFree: pub.price === "0",
-          slug: pub.slug
+          slug: pub.slug,
+          mainImage: pub.main_image
         }));
       
       setUserAds(userPublications);
@@ -302,6 +304,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   // Получаем избранные объявления для отображения
   const getFavoriteAds = (): AdItem[] => {
     return favorites.map(fav => ({
+      mainImage: fav.publication.main_image,
       itemId: fav.publication.id,
       title: fav.publication.name,
       exchangeItem: fav.publication.price === "0" ? "Бесплатно" : `Цена: ${fav.publication.price}`,
@@ -521,6 +524,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
                       onEdit={() => handleEditAd(item)}
                       onRemove={() => handleRemoveAd(item.itemId)}
                       mode="user-account"
+                      mainImage={item.mainImage}
                     />
                   ))
                 )}

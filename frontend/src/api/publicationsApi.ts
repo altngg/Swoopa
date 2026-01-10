@@ -26,6 +26,32 @@ export interface CreatePublicationData {
   status?: number;
 }
 
+export interface PublicationImage {
+  id: number;
+  image: string;
+  publication: number;
+  order: number;
+}
+
+export interface Publication {
+  id: number;
+  name: string;
+  slug: string;
+  price: string;
+  description: string;
+  main_image: string | null;
+  publication_type_name: string;
+  publication_type?: number;
+  status_name: string;
+  status?: number;
+  author_username: string;
+  author_id: number;
+  created_at: string;
+  images: string[]; 
+}
+
+
+
 export const publicationsApi = {
   getAll: async (): Promise<Publication[]> => {
     const response = await apiClient.get('/main/publications');

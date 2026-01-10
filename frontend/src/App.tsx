@@ -30,7 +30,7 @@ function App() {
                   <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
                   <Route path="/user-account/offers" element={<UserAccount initialTab="offers" />} />
                   <Route path="/item/:id" element={<ItemPreview />} />
-                  <Route path="/item/free/:id" element={<ItemPreview isFree={true} />} />
+                  <Route path="/item/free/:id" element={<ItemPreview />} />
                   <Route path="/add-post" element={<AddPost />} />
                   <Route path="/profile" element={<Profile />} />
                 </Routes>

@@ -9,6 +9,12 @@ const apiClient = axios.create({
   },
 });
 
+export const getImageUrl = (path: string | null) => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `${API_BASE_URL}${path}`;
+};
+
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');

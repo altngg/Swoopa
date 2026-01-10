@@ -74,7 +74,8 @@ const Profile = () => {
                             key={item.itemId}
                             itemId={item.itemId}
                             title={item.title}
-                            exchangeItem={item.exchangeItem}
+                            exchangeItem={item.exchangeItem} 
+                            slug={''}                            
                             />
                       ))}
                     </div>
