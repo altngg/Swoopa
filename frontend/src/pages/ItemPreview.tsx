@@ -125,7 +125,7 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
       <div className="w-full">
         <div className="flex gap-[5rem] mb-12">
           <div className="flex-1">
-            <Gallery />
+            <Gallery images={[]} />
           </div>
           
           <div className="flex-1">
