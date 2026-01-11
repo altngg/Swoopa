@@ -79,6 +79,13 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
 
   useEffect(() => {
+    // Проверяем наличие токена
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
     loadUserData();
     loadUserPublications();
     loadLocations();
@@ -104,8 +111,9 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
       setTempCity(user.location.city);
       setUserAvatar(user.profile_picture);
     } catch (error) {
+      console.error('Ошибка при загрузке данных пользователя:', error);
       message.error('Ошибка при загрузке данных пользователя');
-      navigate('/login');
+      // Не делаем редирект, чтобы пользователь мог остаться на странице
     } finally {
       setLoading(false);
     }
