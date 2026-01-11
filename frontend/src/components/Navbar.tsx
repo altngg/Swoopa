@@ -4,11 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Spin } from 'antd';
 import { authApi } from '../api/authApi';
-import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
   const navigate = useNavigate();
-  const { isLoggedIn, logout } = useAuth();
   const [selectedCity, setSelectedCity] = useState('Москва');
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
@@ -16,11 +14,12 @@ function Navbar() {
   const [availableCities, setAvailableCities] = useState<Array<{id: number, city: string}>>([]);
   const [loadingCities, setLoadingCities] = useState(false);
   
+  // Простая проверка - есть токен или нет
+  const isLoggedIn = !!localStorage.getItem('access_token');
+  
   useEffect(() => {
-    // Загружаем города из базы данных
     loadCities();
     
-    // Пытаемся получить сохраненный город пользователя
     const savedCity = localStorage.getItem('selected_city');
     const savedCityId = localStorage.getItem('selected_city_id');
     if (savedCity) {
@@ -108,12 +107,14 @@ function Navbar() {
     
     localStorage.setItem('selected_city', cityName);
     localStorage.setItem('selected_city_id', cityId.toString());
-    
-    console.log(`Выбран город: ${cityName} (ID: ${cityId})`);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     navigate('/login');
   };
 

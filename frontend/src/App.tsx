@@ -18,28 +18,33 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="*" element={
-              <>
-                <Navbar />
-                <SearchField />
-                <Routes>
-                  <Route path="/" element={<Feed />} />
-                  <Route path="/feed" element={<Feed />} />
-                  <Route path="/favorites" element={<Favorites />} />
-                  <Route path="/user-account" element={<UserAccount initialTab="ads" />} />
-                  <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
-                  <Route path="/user-account/offers" element={<UserAccount initialTab="offers" />} />
-                  <Route path="/item/:id" element={<ItemPreview />} />
-                  <Route path="/item/free/:id" element={<ItemPreview />} />
-                  <Route path="/add-post" element={<AddPost />} />
-                  <Route path="/profile" element={<Profile />} />
-                </Routes>
-              </>
-            } />
+            <Route path="/*" element={<MainLayout />} />
           </Routes>
         </div>
       </Router>
     </AuthProvider>
+  );
+}
+
+// Выносим общий лейаут с Navbar отдельно
+function MainLayout() {
+  return (
+    <>
+      <Navbar />
+      <SearchField />
+      <Routes>
+        <Route path="/" element={<Feed />} />
+        <Route path="/feed" element={<Feed />} />
+        <Route path="/favorites" element={<Favorites />} />
+        <Route path="/user-account" element={<UserAccount initialTab="ads" />} />
+        <Route path="/user-account/messages" element={<UserAccount initialTab="messages" />} />
+        <Route path="/user-account/offers" element={<UserAccount initialTab="offers" />} />
+        <Route path="/item/:id" element={<ItemPreview />} />
+        <Route path="/item/free/:id" element={<ItemPreview />} />
+        <Route path="/add-post" element={<AddPost />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+    </>
   );
 }
 

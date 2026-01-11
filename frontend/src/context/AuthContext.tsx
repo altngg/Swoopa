@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext, useEffect, type ReactNode }
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  login: () => void;
+  login: (token: string, refreshToken?: string) => void;
   logout: () => void;
 }
 
@@ -22,16 +22,31 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Инициализируем состояние на основе наличия токена в localStorage
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    const token = localStorage.getItem('access_token');
+    return !!token;
+  });
 
   useEffect(() => {
-    // Проверяем токен при загрузке
+    console.log('AuthProvider mounted, isLoggedIn:', isLoggedIn);
+    console.log('Token exists:', !!localStorage.getItem('access_token'));
+    
+    // Дополнительная проверка при монтировании
     const token = localStorage.getItem('access_token');
-    setIsLoggedIn(!!token);
+    if (token && !isLoggedIn) {
+      console.log('Found token but state is false, correcting...');
+      setIsLoggedIn(true);
+    }
   }, []);
 
-  const login = () => {
+  const login = (token: string, refreshToken?: string) => {
+    localStorage.setItem('access_token', token);
+    if (refreshToken) {
+      localStorage.setItem('refresh_token', refreshToken);
+    }
     setIsLoggedIn(true);
+    console.log('User logged in, token saved');
   };
 
   const logout = () => {
@@ -39,6 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     setIsLoggedIn(false);
+    console.log('User logged out');
   };
 
   return (
