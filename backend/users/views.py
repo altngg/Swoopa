@@ -81,15 +81,6 @@ def register_user(request):
             location=data['location']
         )
         
-        user = authenticate(
-            request, 
-            username=data['username'], 
-            password=data['password']
-        )
-        
-        if user is not None:
-            login(request, user)
-        
         serializer = UserSerializer(user)
         return Response({
             'message': 'Registration successful. Congrats!',
