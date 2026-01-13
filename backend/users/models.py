@@ -1,5 +1,10 @@
+import jwt
+from datetime import datetime, timedelta
+from django.conf import settings
+from django.contrib.auth.models import (
+	AbstractBaseUser, BaseUserManager, PermissionsMixin
+)
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.html import strip_tags
 
 class Location(models.Model):
@@ -8,7 +13,7 @@ class Location(models.Model):
     def __str__(self):
         return f"{self.city}"
 
-class CustomUserManager(BaseUserManager):
+class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email or not username:
             raise ValueError("Email or username is not set.")
@@ -17,33 +22,55 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
 
-    def create_superuser(self, username, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_staff', True)
+        return user
 
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        
-        return self.create_user(email=email, username=username, password=password, **extra_fields)
-class User(AbstractUser):
+    def create_superuser(self, username, email, password, **extra_fields):
+        if password is None:
+            raise TypeError('Superusers must have a password.')
+
+        user = self.create_user(username, email, password)
+        user.is_superuser = True
+        user.is_staff = True
+        user.save()
+
+        return user
+
+class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(unique=True, max_length=50)
     email = models.EmailField(unique=True, max_length=254)
     password = models.CharField(max_length=128)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True) # FIX ADDING PICTURES THROUGH FORM DATA
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    objects = CustomUserManager()
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
 
-    REQUIRED_FIELDS = ['email']
+    objects = UserManager()
 
     def __str__(self):
-        return self.username
+        return self.email
     
-    def clean(self):
-        for field in ['username', 'email', 'password', 'location', 'profile_picture']:
-            value = getattr(self, field)
-            if value:
-                setattr(self, field, strip_tags(value))
+    @property
+    def token(self):
+        return self._generate_jwt_token()
+
+    def get_full_name(self):
+        return self.username
+
+    def get_short_name(self):
+        return self.username
+
+    def _generate_jwt_token(self):
+        dt = datetime.now() + timedelta(days=1)
+
+        token = jwt.encode({
+            'id': self.pk,
+            'exp': int(dt.strftime('%s'))
+        }, settings.SECRET_KEY, algorithm='HS256')
+
+        return token.decode('utf-8')
