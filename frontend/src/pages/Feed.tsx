@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import ItemCard from '../components/ItemCard';
 import SortDropdown from '../components/SortDropdown';
 import { useLocation } from 'react-router-dom';
-import { publicationsApi, type Publication } from '../api/publicationsApi'; // Добавьте type
+import { publicationsApi, type Publication } from '../api/publicationsApi';
 import { Spin } from 'antd';
 
 const Feed = () => {
@@ -103,10 +103,23 @@ const Feed = () => {
               overflow-y-auto
             ">
               {filteredAndSortedPublications.map((pub) => {
-                // Преобразуем images в правильный формат
-                const imagesArray = pub.images ? 
-                  pub.images.map(img => typeof img === 'string' ? { image: img } : img) 
-                  : [];
+                // Определяем тип для изображений
+                type ImageType = string | { image: string };
+                
+                // Безопасно извлекаем первую картинку
+                let firstImage = '';
+                
+                if (pub.images && Array.isArray(pub.images)) {
+                  const imagesArray = pub.images as ImageType[];
+                  if (imagesArray.length > 0) {
+                    const firstImg = imagesArray[0];
+                    if (typeof firstImg === 'string') {
+                      firstImage = firstImg;
+                    } else if (firstImg && typeof firstImg === 'object' && 'image' in firstImg) {
+                      firstImage = firstImg.image;
+                    }
+                  }
+                }
 
                 return (
                   <ItemCard 
@@ -117,7 +130,7 @@ const Feed = () => {
                     slug={pub.slug}
                     isFree={parseFloat(pub.price) === 0}
                     mainImage={pub.main_image}
-                    images={imagesArray} // Теперь это массив объектов { image: string }
+                    images={firstImage}
                   />
                 );
               })}

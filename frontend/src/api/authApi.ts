@@ -89,4 +89,9 @@ export const authApi = {
     const response = await apiClient.get('/users/locations/');
     return response.data;
   },
+  
+  getUserById: async (userId: number): Promise<User> => {
+    const response = await apiClient.get(`/users/${userId}`);
+    return response.data;
+  },
 };
