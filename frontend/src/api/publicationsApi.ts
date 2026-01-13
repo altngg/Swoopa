@@ -14,7 +14,7 @@ export interface Publication {
   author_username: string;
   author_id: number;
   created_at: string;
-  images: string[];
+  images: PublicationImage[]; // Изменить здесь тоже
 }
 
 export interface CreatePublicationData {
@@ -47,7 +47,7 @@ export interface Publication {
   author_username: string;
   author_id: number;
   created_at: string;
-  images: string[]; 
+  images: PublicationImage[]; 
 }
 
 

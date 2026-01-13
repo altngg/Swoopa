@@ -18,10 +18,10 @@ function Gallery({ images }: GalleryProps) {
     setCurrentIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
   };
 
+  // Используем URL как есть, так как они уже обработаны getImageUrl
   const getImageUrl = (path: string) => {
     if (!path) return '';
-    if (path.startsWith('http')) return path;
-    return `http://localhost:8000${path}`;
+    return path; // URL уже должен быть полным
   };
 
   return (
@@ -44,6 +44,7 @@ function Gallery({ images }: GalleryProps) {
             alt={`Gallery ${currentIndex + 1}`}
             className="w-full h-full object-cover"
             onError={(e) => {
+              console.error('Error loading image:', images[currentIndex]);
               e.currentTarget.src = 'https://via.placeholder.com/560x560?text=Изображение+не+загружено';
             }}
           />
