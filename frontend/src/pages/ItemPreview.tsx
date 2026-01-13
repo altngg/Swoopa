@@ -7,6 +7,8 @@ import Gallery from '../components/Gallery';
 import ButtonFilled from '../components/ButtonFilled';
 import { Modal, message } from 'antd';
 import { publicationsApi } from '../api/publicationsApi';
+// import { favoritesApi } from '../api/favoritesApi';
+// import { authApi } from '../api/authApi';
 
 interface ItemPreviewProps {
   isFree?: boolean;
@@ -136,6 +138,7 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
   // Функция для обработки клика по лайку
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     
     if (!itemData) return;
     
@@ -171,8 +174,20 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
     }
   };
 
-  const handleUserClick = () => {
-    if (itemData) {
+  // Исправленная функция для клика по имени пользователя
+  const handleUserClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    console.log('🟡 Клик по имени пользователя');
+    console.log('🟡 itemData:', itemData);
+    console.log('🟡 author_id:', itemData?.author_id);
+    
+    if (itemData && itemData.author_id) {
+      console.log(`🟡 Переход на профиль пользователя с ID: ${itemData.author_id}`);
+      navigate(`/users/${itemData.author_id}`);
+    } else {
+      console.error('❌ Нет данных для перехода на профиль');
       message.info('Просмотр профиля временно недоступен');
     }
   };
@@ -247,6 +262,8 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
   // Отладочная информация
   console.log('📊 ==== ОТЛАДОЧНАЯ ИНФОРМАЦИЯ ====');
   console.log('📊 Название товара:', itemData.name);
+  console.log('📊 Author ID для перехода:', itemData.author_id);
+  console.log('📊 Username:', itemData.author_username);
   console.log('📊 Main image путь:', itemData.main_image);
   console.log('📊 Images array (объекты):', itemData.images);
   console.log('📊 Всего изображений для галереи:', allImages.length);
@@ -294,6 +311,7 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
               <p 
                 className="text-[1.25rem] text-gray-600 hover:cursor-pointer hover:text-blue-600 transition-colors"
                 onClick={handleUserClick}
+                style={{ cursor: 'pointer' }}
               >
                 {itemData.author_username}
               </p>

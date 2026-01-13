@@ -42,7 +42,7 @@ function MainLayout() {
         <Route path="/item/:id" element={<ItemPreview />} />
         <Route path="/item/free/:id" element={<ItemPreview />} />
         <Route path="/add-post" element={<AddPost />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/users/:id" element={<Profile />} />
       </Routes>
     </>
   );
