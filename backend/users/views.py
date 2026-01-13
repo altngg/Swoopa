@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.parsers import MultiPartParser, FormParser
 import os
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializer import LocationSerializer, UserSerializer
 from .models import Location, User
@@ -41,88 +40,125 @@ def get_user_by_id(request, user_id):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
-    data = request.data.copy()
-    
-    required_fields = ['username', 'email', 'password']
-    for field in required_fields:
-        if not data.get(field):
-            return Response({'error': f'Field {field} is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if User.objects.filter(email=data['email']).exists():
-        return Response({'error': 'User with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if User.objects.filter(username=data['username']).exists():
-        return Response({'error': 'This username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    location_id = data.get('location')
-    if location_id:
-        try:
-            location = Location.objects.get(id=location_id)
-            data['location'] = location
-        except Location.DoesNotExist:
-            return Response({'error': 'Location does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    user = User.objects.create_user(
-        username=data['username'],
-        email=data['email'],
-        password=data['password'],
-        location=data.get('location')
-    )
-    
-    refresh = RefreshToken.for_user(user)
-    serializer = UserSerializer(user)
-    
-    return Response({
-        'message': 'Registration successful.',
-        'user': serializer.data,
-        'access_token': str(refresh.access_token),
-        'refresh_token': str(refresh),
-    }, status=status.HTTP_201_CREATED)
+    try:
+        data = request.data.copy()
+        
+        required_fields = ['username', 'email', 'password']
+        for field in required_fields:
+            if not data.get(field):
+                return Response(
+                    {'error': f'Field {field} is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        if User.objects.filter(email=data['email']).exists():
+            return Response(
+                {'error': 'User with this email already exists. Try again.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if User.objects.filter(username=data['username']).exists():
+            return Response(
+                {'error': 'This username already exists. Too bad.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        location_id = data.get('location')
+        if location_id:
+            try:
+                location = Location.objects.get(id=location_id)
+                data['location'] = location
+            except Location.DoesNotExist:
+                return Response(
+                    {'error': 'This location does not exist yet.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        user = User.objects.create_user(
+            username=data['username'],
+            email=data['email'],
+            password=data['password'],
+            location=data['location']
+        )
+        
+        user = authenticate(
+            request, 
+            username=data['username'], 
+            password=data['password']
+        )
+        
+        if user is not None:
+            login(request, user)
+        
+        serializer = UserSerializer(user)
+        return Response({
+            'message': 'Registration successful. Congrats!',
+            'user': serializer.data
+        }, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-    data = request.data
-    username_or_email = data.get('username')
-    password = data.get('password')
-    
-    if not username_or_email or not password:
-        return Response({'error': 'Username/email and password required'}, status=status.HTTP_400_BAD_REQUEST)
-    
     try:
-        if '@' in username_or_email:
-            user = User.objects.get(email=username_or_email)
+        data = request.data
+        username_or_email = data.get('username')
+        password = data.get('password')
+        
+        if not username_or_email or not password:
+            return Response(
+                {'error': 'Username or email and password are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            if '@' in username_or_email:
+                user = User.objects.get(email=username_or_email)
+            else:
+                user = User.objects.get(username=username_or_email)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        user = authenticate(request, username=user.username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            serializer = UserSerializer(user)
+            return Response({
+                'message': 'Login successful.',
+                'user': serializer.data
+            })
         else:
-            user = User.objects.get(username=username_or_email)
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_401_UNAUTHORIZED)
-    
-    user = authenticate(username=user.username, password=password)
-    if not user:
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-    
-    refresh = RefreshToken.for_user(user)
-    serializer = UserSerializer(user)
-    
-    return Response({
-        'message': 'Login successful',
-        'user': serializer.data,
-        'access_token': str(refresh.access_token),
-        'refresh_token': str(refresh),
-    })
+            return Response(
+                {'error': 'Wrong password.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+            
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_user(request):
     try:
-        # Получаем refresh token из запроса
-        refresh_token = request.data.get('refresh_token')
-        if refresh_token:
-            token = RefreshToken(refresh_token)
-            token.blacklist()  # Требуется включенный Blacklist app
-        return Response({'message': 'Logout successful.'})
+        logout(request)
+        return Response({'message': 'Logout successful. Well done!'})
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
