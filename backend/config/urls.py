@@ -2,6 +2,10 @@ from django.contrib import admin
 from django.urls import include, path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 """
 URL configuration for config project.
@@ -25,6 +29,8 @@ urlpatterns = [
     path('', include('users.urls')),
     path('main/', include('main.urls')),
     path('users/', include('users.urls')),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('chats/', include('chats.urls')),
     path('offers/', include('offers.urls')),
 ]
