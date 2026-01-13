@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -11,7 +12,7 @@ import DialogueWindow from '../components/DialogueWindow';
 import ListingCard from '../components/ListingCard';
 import { authApi, type User } from '../api/authApi';
 import { publicationsApi, type Publication } from '../api/publicationsApi';
-import { favoritesApi, type Favorite } from '../api/favoritesApi';
+// import { favoritesApi, type Favorite } from '../api/favoritesApi'; // ЗАКОММЕНТИРОВАНО
 
 const { Option } = Select;
 
@@ -76,13 +77,31 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
-  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]); // Изменил тип на any[]
+
+  // Функция для получения URL изображения
+  const getImageUrl = (path: string | null | undefined): string => {
+    if (!path) return '';
+    if (typeof path !== 'string') {
+      console.error('getImageUrl получил не строку:', path);
+      return '';
+    }
+    if (path.startsWith('http')) return path;
+    return `http://localhost:8000${path}`;
+  };
 
   useEffect(() => {
+    // Проверяем наличие токена
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
     loadUserData();
     loadUserPublications();
     loadLocations();
-    loadFavorites();
+    // loadFavorites(); // ЗАКОММЕНТИРОВАНО
     
     if (location.pathname === '/user-account/messages') {
       setActiveTab('messages');
@@ -102,10 +121,18 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
       setSelectedLocationId(user.location.id);
       setTempName(user.username);
       setTempCity(user.location.city);
-      setUserAvatar(user.profile_picture);
+      
+      // Получаем URL аватарки
+      if (user.profile_picture) {
+        const avatarUrl = getImageUrl(user.profile_picture);
+        setUserAvatar(avatarUrl);
+      } else {
+        setUserAvatar(null);
+      }
     } catch (error) {
+      console.error('Ошибка при загрузке данных пользователя:', error);
       message.error('Ошибка при загрузке данных пользователя');
-      navigate('/login');
+      // Не делаем редирект, чтобы пользователь мог остаться на странице
     } finally {
       setLoading(false);
     }
@@ -121,11 +148,11 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
         .map(pub => ({
           itemId: pub.id,
           title: pub.name,
-          exchangeItem: pub.price === "0" ? "Бесплатно" : `Цена: ${pub.price}`,
+          exchangeItem: pub.price === "0" || pub.price.toLowerCase().includes('бесплатно') ? "Бесплатно" : `Цена: ${pub.price}`,
           userName: pub.author_username,
-          isFree: pub.price === "0",
+          isFree: pub.price === "0" || pub.price.toLowerCase().includes('бесплатно'),
           slug: pub.slug,
-          mainImage: pub.main_image
+          mainImage: pub.main_image ? getImageUrl(pub.main_image) : null
         }));
       
       setUserAds(userPublications);
@@ -144,6 +171,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
     }
   };
 
+  // ЗАКОММЕНТИРОВАНО из-за 403 ошибки
+  /*
   const loadFavorites = async () => {
     try {
       const favoritesData = await favoritesApi.getMyFavorites();
@@ -152,6 +181,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
       console.error('Ошибка при загрузке избранного:', error);
     }
   };
+  */
 
   const loadIncomingOffers = async () => {
     // TODO: Реализовать API для загрузки предложений
@@ -216,6 +246,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
     try {
       await authApi.logout();
       localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
       setShowLogoutConfirm(false);
       message.success('Вы успешно вышли из системы');
       navigate('/login');
@@ -255,10 +286,13 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
         message.success('Объявление удалено');
       }
     } catch (error) {
+      console.error('Ошибка при удалении объявления:', error);
       message.error('Ошибка при удалении объявления');
     }
   };
 
+  // ЗАКОММЕНТИРОВАНО из-за 403 ошибки
+  /*
   const handleRemoveFavorite = async (favoriteId: number) => {
     try {
       await favoritesApi.remove(favoriteId);
@@ -268,6 +302,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
       message.error('Ошибка при удалении из избранного');
     }
   };
+  */
 
   const handleOfferResponse = async (offerId: number, status: 'accepted' | 'rejected') => {
     // TODO: Реализовать API для ответа на предложения
@@ -294,25 +329,32 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = 'ads' }) => {
   const handleAvatarUpload = async (file: File) => {
     try {
       const response = await authApi.updateAvatar(file);
-      setUserAvatar(response.user.profile_picture);
+      if (response.user.profile_picture) {
+        const avatarUrl = getImageUrl(response.user.profile_picture);
+        setUserAvatar(avatarUrl);
+      }
       message.success('Аватар обновлен');
     } catch (error) {
+      console.error('Ошибка при обновлении аватара:', error);
       message.error('Ошибка при обновлении аватара');
     }
   };
 
+  // ЗАКОММЕНТИРОВАНО из-за 403 ошибки
+  /*
   // Получаем избранные объявления для отображения
   const getFavoriteAds = (): AdItem[] => {
     return favorites.map(fav => ({
-      mainImage: fav.publication.main_image,
+      mainImage: fav.publication.main_image ? getImageUrl(fav.publication.main_image) : null,
       itemId: fav.publication.id,
       title: fav.publication.name,
-      exchangeItem: fav.publication.price === "0" ? "Бесплатно" : `Цена: ${fav.publication.price}`,
-      userName: 'Автор', // Можно добавить получение имени автора если нужно
-      isFree: fav.publication.price === "0",
+      exchangeItem: fav.publication.price === "0" || fav.publication.price.toLowerCase().includes('бесплатно') ? "Бесплатно" : `Цена: ${fav.publication.price}`,
+      userName: fav.publication.author_username || 'Автор',
+      isFree: fav.publication.price === "0" || fav.publication.price.toLowerCase().includes('бесплатно'),
       slug: fav.publication.slug
     }));
   };
+  */
 
   if (loading) {
     return (
