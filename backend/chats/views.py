@@ -17,9 +17,32 @@ def get_my_chats(request):
     chats = Chat.objects.filter(
         Q(author=current_user) |
         Q(publication__author=current_user)
-    )
-    serializedData = ChatSerializer(chats, many=True).data
-    return Response(serializedData)
+    ).distinct()
+    
+    response_data = []
+    
+    for chat in chats:
+        latest_message = Message.objects.filter(
+            chat=chat
+        ).order_by('-created_at').first()
+        
+        chat_serializer = ChatSerializer(chat, context={'request': request})
+        
+        if latest_message:
+            message_serializer = MessageSerializer(
+                latest_message, 
+                context={'request': request}
+            )
+            messages_data = message_serializer.data
+        else:
+            messages_data = None
+        
+        response_data.append({
+            "chat": chat_serializer.data,
+            "messages": [messages_data]
+        })
+    
+    return Response(response_data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
