@@ -30,7 +30,7 @@ export interface Chat {
 
 export const chatsApi = {
   // add message + create offer
-  addMessage: async (chat_id: string, text: string): Promise<Message> => {
+  addMessage: async (chat_id: number, text: string): Promise<Message> => {
     const response = await apiClient.post("/chats/add-message/", {
       chat_id,
       text,

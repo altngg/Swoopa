@@ -35,19 +35,7 @@ interface UserAccountProps {
   initialTab?: "ads" | "messages" | "offers";
 }
 
-interface Dialog {
-  id: string; // change to number
-  userName: string;
-  lastMessage?: string; // changed to optional, cause don't wanna change backend
-  unreadCount?: number;
-  timestamp: string;
-  itemId: number;
-  itemTitle: string;
-  offerType?: "exchange" | "free";
-  status?: "pending" | "accepted" | "rejected";
-}
-
-type DialogItem = Dialog;
+type ChatItem = Chat;
 
 interface OfferItem {
   id: number;
@@ -301,18 +289,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     message.warning("Функция удаления аккаунта временно недоступна");
   };
 
-  const handleDialogClick = (dialog: Dialog) => {
-    const typedDialog: DialogItem = {
-      id: dialog.id,
-      userName: dialog.userName,
-      lastMessage: dialog.lastMessage,
-      unreadCount: dialog.unreadCount,
-      timestamp: dialog.timestamp,
-      itemId: dialog.itemId,
-      itemTitle: dialog.itemTitle,
-      offerType: dialog.offerType,
-      status: dialog.status,
-    };
+  const handleDialogClick = (chat: Chat) => {
+    const typedDialog: ChatItem = chat;
     setSelectedDialog(typedDialog);
   };
 
@@ -714,20 +692,28 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
               <div className="w-96">
                 <DialoguesList
                   dialogs={chats}
-                  onDialogClick={() => {
-                    console.log("hello");
-                  }}
+                  onDialogClick={handleDialogClick}
                   userName={userName}
                 />
               </div>
 
               <div className="flex-1">
-                <div className="h-[calc(100vh-200px)] flex items-center justify-center bg-white rounded-lg border border-gray-200">
-                  <div className="text-center text-gray-500">
-                    <p className="text-lg mb-2">Выберите диалог</p>
-                    <p className="text-sm">или начните новый разговор</p>
+                {selectedDialog ? (
+                  <DialogueWindow
+                    onClose={() => {
+                      console.log("hee");
+                    }}
+                    userName={userName}
+                    selectedChat={selectedDialog}
+                  />
+                ) : (
+                  <div className="h-[calc(100vh-200px)] flex items-center justify-center bg-white rounded-lg border border-gray-200">
+                    <div className="text-center text-gray-500">
+                      <p className="text-lg mb-2">Выберите диалог</p>
+                      <p className="text-sm">или начните новый разговор</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}

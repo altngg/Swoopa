@@ -3,55 +3,32 @@ import { Avatar, Button } from "antd";
 import { UserOutlined, CloseOutlined } from "@ant-design/icons";
 import DirectMessage from "./DirectMessage";
 import MessageInputField from "./MessageInputField";
+import { chatsApi, type Chat } from "../api/chatsApi";
 
 interface DialogueWindowProps {
   onClose: () => void;
-  itemId: number;
-  dialogUserName?: string;
-  lastMessage?: string;
+  selectedChat: Chat;
+  userName: string;
   offerType?: "exchange" | "free"; // Добавлено новое свойство
   offerStatus?: "pending" | "accepted" | "rejected"; // Добавлено новое свойство
 }
 
 const DialogueWindow: React.FC<DialogueWindowProps> = ({
   onClose,
-  dialogUserName = "Пользователь",
-  lastMessage = "",
+  selectedChat,
+  userName,
   offerType = "exchange",
   offerStatus = "pending",
 }) => {
-  const [messages, setMessages] = useState([
-    { id: 1, text: lastMessage, isCurrentUser: false, time: "10:30" },
-    {
-      id: 2,
-      text: "Деньги есть, готов обсудить обмен",
-      isCurrentUser: true,
-      time: "10:32",
-    },
-    {
-      id: 3,
-      text: "Отлично! Когда можем встретиться?",
-      isCurrentUser: false,
-      time: "10:33",
-    },
-    {
-      id: 4,
-      text: "В любое время после 18:00",
-      isCurrentUser: true,
-      time: "10:35",
-    },
-  ]);
+  const publicationAuthor = selectedChat.chat.publication.author_username;
+  const chatAuthor = selectedChat.chat.author_username;
+  const dialogUserName =
+    userName === publicationAuthor ? chatAuthor : publicationAuthor;
 
-  const handleSendMessage = (text: string) => {
-    const newMessage = {
-      id: messages.length + 1,
-      text,
-      isCurrentUser: true,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
+  const [messages, setMessages] = useState(selectedChat.messages);
+
+  const handleSendMessage = async (text: string) => {
+    const newMessage = await chatsApi.addMessage(selectedChat.chat.id, text);
     setMessages([...messages, newMessage]);
   };
 
