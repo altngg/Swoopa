@@ -282,7 +282,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     try {
       const ad = userAds.find((ad) => ad.itemId === itemId);
       if (ad?.slug) {
-        await publicationsApi.delete(ad.slug);
+        await publicationsApi.deletePublication(ad.slug);
         setUserAds((prevAds) => prevAds.filter((ad) => ad.itemId !== itemId));
         message.success("Объявление удалено");
       }

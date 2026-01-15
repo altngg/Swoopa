@@ -76,7 +76,7 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
         setLoading(true);
         console.log("🟡 Начинаем загрузку публикации по slug:", id);
 
-        const publication = await publicationsApi.getBySlug(id);
+        const publication = await publicationsApi.getPublicationBySlug(id);
         console.log("✅ Получены данные публикации:", publication);
         setItemData(publication);
 

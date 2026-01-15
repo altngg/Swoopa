@@ -1,27 +1,28 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { LeftOutlined } from '@ant-design/icons';
-import ServiceButton from '../components/ButtonFilled';
-import InvertedButton from '../components/ButtonOutline';
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { LeftOutlined } from "@ant-design/icons";
+import ServiceButton from "../components/ButtonFilled";
+import InvertedButton from "../components/ButtonOutline";
+import { publicationsApi } from "../api/publicationsApi";
 
 const AddPost = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isEditMode, setIsEditMode] = useState(false);
-  const [postType, setPostType] = useState<'service' | 'product'>('service');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [exchangeFor, setExchangeFor] = useState('');
+  const [postType, setPostType] = useState<"service" | "product">("service");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [exchangeFor, setExchangeFor] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Загружаем данные для редактирования, если они есть
   useEffect(() => {
-    if (location.state?.mode === 'edit' && location.state?.adData) {
+    if (location.state?.mode === "edit" && location.state?.adData) {
       setIsEditMode(true);
       const adData = location.state.adData;
-      setTitle(adData.title || '');
-      setExchangeFor(adData.exchangeItem || '');
+      setTitle(adData.title || "");
+      setExchangeFor(adData.exchangeItem || "");
       // Здесь можно загрузить дополнительные данные, если они есть
       // setDescription(adData.description || '');
       // setPostType(adData.type || 'service');
@@ -42,17 +43,17 @@ const AddPost = () => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const newFiles = Array.from(files);
-      
+
       const totalFiles = photos.length + newFiles.length;
       if (totalFiles > 5) {
-        alert('Можно загрузить не более 5 фотографий');
+        alert("Можно загрузить не более 5 фотографий");
         const filesToAdd = newFiles.slice(0, 5 - photos.length);
         setPhotos([...photos, ...filesToAdd]);
       } else {
         setPhotos([...photos, ...newFiles]);
       }
-      
-      event.target.value = '';
+
+      event.target.value = "";
     }
   };
 
@@ -64,29 +65,31 @@ const AddPost = () => {
 
   const handlePublish = () => {
     const data = {
-      type: postType,
-      title,
+      name: title,
+      price: exchangeFor,
       description,
-      exchangeFor,
-      photos: photos.map(photo => photo.name),
-      itemId: isEditMode ? location.state?.adData?.itemId : undefined
+      publication_type_slug: postType,
+      status: 1, // по хорошему сделать статус по slug/sysname
+      publication_images: photos.map((photo) => photo.name),
     };
 
-    console.log(isEditMode ? 'Редактирование:' : 'Публикация:', data);
-    
+    console.log(isEditMode ? "Редактирование:" : "Публикация:", data);
+
     if (isEditMode) {
-      // Логика обновления существующего объявления
-      alert('Объявление обновлено!');
+      publicationsApi.updatePublication("godheavens", data); // ВОТ ТУТ СЛАГ
+      alert("Объявление обновлено!");
     } else {
-      // Логика создания нового объявления
-      alert('Объявление опубликовано!');
+      publicationsApi.createPublication(data);
+      alert("Объявление опубликовано!");
     }
-    
-    navigate('/user-account');
+
+    navigate("/user-account");
   };
 
   const getPlaceholderText = () => {
-    return postType === 'service' ? 'Урок английского (45 минут)' : 'Кофемашина DeLonghi';
+    return postType === "service"
+      ? "Урок английского (45 минут)"
+      : "Кофемашина DeLonghi";
   };
 
   return (
@@ -100,7 +103,7 @@ const AddPost = () => {
           <LeftOutlined className="text-lg" />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">
-          {isEditMode ? 'Редактировать публикацию' : 'Новая публикация'}
+          {isEditMode ? "Редактировать публикацию" : "Новая публикация"}
         </h1>
       </div>
 
@@ -108,30 +111,26 @@ const AddPost = () => {
       <div className="ml-11">
         {/* Переключение Услуга/Товар */}
         <div className="flex gap-4 mb-8">
-          {postType === 'service' ? (
-            <ServiceButton
-              onClick={() => setPostType('service')}
-            >
+          {postType === "service" ? (
+            <ServiceButton onClick={() => setPostType("service")}>
               Услуга
             </ServiceButton>
           ) : (
             <InvertedButton
               text="Услуга"
-              onClick={() => setPostType('service')}
+              onClick={() => setPostType("service")}
               className="text-gray-700"
             />
           )}
 
-          {postType === 'product' ? (
-            <ServiceButton
-              onClick={() => setPostType('product')}
-            >
+          {postType === "product" ? (
+            <ServiceButton onClick={() => setPostType("product")}>
               Товар
             </ServiceButton>
           ) : (
             <InvertedButton
               text="Товар"
-              onClick={() => setPostType('product')}
+              onClick={() => setPostType("product")}
             />
           )}
         </div>
@@ -141,7 +140,7 @@ const AddPost = () => {
           {/* Название */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Введите название {postType === 'service' ? 'услуги' : 'товара'}
+              Введите название {postType === "service" ? "услуги" : "товара"}
             </label>
             <p className="text-sm text-gray-500 mb-2">
               Например: {getPlaceholderText()}
@@ -175,7 +174,7 @@ const AddPost = () => {
           {/* Услуга для обмена */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Выберите {postType === 'service' ? 'услугу' : 'товар'} для обмена
+              Выберите {postType === "service" ? "услугу" : "товар"} для обмена
             </label>
             <p className="text-sm text-gray-500 mb-2">
               Например: {getPlaceholderText()}
@@ -194,10 +193,8 @@ const AddPost = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Прикрепите фотографии (не более пяти)
             </label>
-            <p className="text-sm text-gray-500 mb-2">
-              Прикрепить файл
-            </p>
-            
+            <p className="text-sm text-gray-500 mb-2">Прикрепить файл</p>
+
             {/* Скрытый input для выбора файлов */}
             <input
               type="file"
@@ -207,7 +204,7 @@ const AddPost = () => {
               multiple
               className="hidden"
             />
-            
+
             {/* Кнопка добавления фото */}
             <ServiceButton
               onClick={handleAddPhotoClick}
@@ -246,7 +243,7 @@ const AddPost = () => {
           {/* Кнопка публикации/обновления */}
           <div className="flex justify-end">
             <InvertedButton
-              text={isEditMode ? 'Обновить' : 'Опубликовать'}
+              text={isEditMode ? "Обновить" : "Опубликовать"}
               onClick={handlePublish}
               className="px-8 py-2"
             />
