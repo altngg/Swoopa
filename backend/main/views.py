@@ -162,9 +162,9 @@ def add_favorite(request):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def remove_favorite(request, favorite_id):
+def remove_favorite(request, favorite_slug):
     try:
-        favorite = Favorite.objects.get(id=favorite_id)
+        favorite = Favorite.objects.get(publication__slug=favorite_slug)
     except Favorite.DoesNotExist:
         return Response(
             {"error": "Favorite not found."},

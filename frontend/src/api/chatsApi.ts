@@ -38,13 +38,11 @@ export const chatsApi = {
     return response.data;
   },
 
-  // Get my messages
-  getMyMessages: async (): Promise<Chat[]> => {
+  getMyChats: async (): Promise<Chat[]> => {
     const response = await apiClient.get("/chats/my");
     return response.data;
   },
 
-  // Get chat by publication id
   getChatByPublicationId: async (
     publicationId: number,
     author_username: string
@@ -52,8 +50,6 @@ export const chatsApi = {
     const response = await apiClient.get(
       `/chats/${author_username}/${publicationId}/`
     );
-    console.log(response);
-
     return response.data;
   },
 

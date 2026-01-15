@@ -1,8 +1,8 @@
-import { HeartOutlined, HeartFilled } from '@ant-design/icons';
-import '../index.css';
-import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
-import { favoritesApi } from '../api/favoritesApi';
+import { HeartOutlined, HeartFilled } from "@ant-design/icons";
+import "../index.css";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { favoritesApi } from "../api/favoritesApi";
 
 interface ItemCardProps {
   itemId: number;
@@ -14,14 +14,14 @@ interface ItemCardProps {
   images?: string; // Оставляем как string, так как теперь передаем строку
 }
 
-function ItemCard({ 
-  itemId, 
-  title = 'Название товара', 
-  exchangeItem = 'предмет обмена',
+function ItemCard({
+  itemId,
+  title = "Название товара",
+  exchangeItem = "предмет обмена",
   slug,
   isFree,
   mainImage,
-  images
+  images,
 }: ItemCardProps) {
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
@@ -29,14 +29,14 @@ function ItemCard({
 
   const checkIfFavorite = useCallback(async () => {
     try {
-      const favorites = await favoritesApi.getMyFavorites();
-      const isFavorite = favorites.some(fav => fav.publication.id === itemId);
+      const favorites = await favoritesApi.getMyFavorites(); // плохо тк сто запросов на один итем делается, как по другому сделать пока не придумала
+      const isFavorite = favorites.some((fav) => fav.id === itemId);
       setIsLiked(isFavorite);
     } catch (error: unknown) {
       // Если не авторизован, не показываем ошибку
       const err = error as { response?: { status?: number } };
       if (err.response?.status !== 401) {
-        console.error('Ошибка при проверке избранного:', error);
+        console.error("Ошибка при проверке избранного:", error);
       }
     }
   }, [itemId]);
@@ -51,28 +51,27 @@ function ItemCard({
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     setLoading(true);
     try {
       if (isLiked) {
-        // Удаляем из избранного
         const favorites = await favoritesApi.getMyFavorites();
-        const favorite = favorites.find(fav => fav.publication.id === itemId);
+        const favorite = favorites.find((fav) => fav.id === itemId);
+
         if (favorite) {
-          await favoritesApi.remove(favorite.id);
+          await favoritesApi.removeFromFavorites(favorite.id);
           setIsLiked(false);
         }
       } else {
-        // Добавляем в избранное
-        await favoritesApi.add(slug);
+        await favoritesApi.addToFavorites(slug);
         setIsLiked(true);
       }
     } catch (error: unknown) {
-      console.error('Ошибка при обновлении избранного:', error);
+      console.error("Ошибка при обновлении избранного:", error);
       const err = error as { response?: { status?: number } };
       if (err.response?.status === 401) {
         // Если не авторизован, перенаправляем на логин
-        navigate('/login');
+        navigate("/login");
       }
     } finally {
       setLoading(false);
@@ -81,7 +80,7 @@ function ItemCard({
 
   const getImageUrl = (path: string | null | undefined) => {
     if (!path) return null;
-    if (path.startsWith('http')) return path;
+    if (path.startsWith("http")) return path;
     return `http://localhost:8000${path}`;
   };
 
@@ -89,21 +88,22 @@ function ItemCard({
   const imageUrl = getImageUrl(mainImage || images);
 
   return (
-    <div 
+    <div
       className="flex flex-col gap-3 p-2 cursor-pointer hover:shadow-lg transition-shadow rounded-lg"
       onClick={handleCardClick}
     >
       <div className="relative">
         <div className="w-[14rem] h-[15rem] rounded overflow-hidden bg-gray-200 flex items-center justify-center">
           {imageUrl ? (
-            <img 
+            <img
               src={imageUrl}
               alt={title}
               className="w-full h-full object-cover"
               onError={(e) => {
                 // Если изображение не загрузилось, показываем заглушку
-                e.currentTarget.src = 'https://via.placeholder.com/224x240?text=Нет+изображения';
-                e.currentTarget.className = 'w-full h-full object-contain p-4';
+                e.currentTarget.src =
+                  "https://via.placeholder.com/224x240?text=Нет+изображения";
+                e.currentTarget.className = "w-full h-full object-contain p-4";
               }}
             />
           ) : (
@@ -117,8 +117,10 @@ function ItemCard({
           <h3 className="font-semibold text-[1.125rem] text-gray-900 truncate flex-1">
             {title}
           </h3>
-          <button 
-            className={`flex-shrink-0 transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          <button
+            className={`flex-shrink-0 transition-colors ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             onClick={handleLikeClick}
             disabled={loading}
           >
@@ -129,9 +131,9 @@ function ItemCard({
             )}
           </button>
         </div>
-        
+
         <p className="text-[0.875rem] text-gray-600 truncate">
-          {isFree ? 'Бесплатно' : exchangeItem}
+          {isFree ? "Бесплатно" : exchangeItem}
         </p>
       </div>
     </div>

@@ -1,41 +1,33 @@
-import React, { useState } from 'react';
-import ListingCard from '../components/ListingCard';
-import DialogueWindow from '../components/DialogueWindow';
+import React, { useEffect, useState } from "react";
+import ListingCard from "../components/ListingCard";
+import DialogueWindow from "../components/DialogueWindow";
+import { useNavigate } from "react-router-dom";
+import { favoritesApi, type Favorite } from "../api/favoritesApi";
+import type { Chat } from "../api/chatsApi";
 
 const Favorites = () => {
-  const [selectedChat, setSelectedChat] = useState<number | null>(null);
-  const [favoriteItems, setFavoriteItems] = useState([
-    {
-      itemId: 1,
-      title: "Мока кофеварка",
-      exchangeItem: "Урок английского",
-      userName: "Максим",
-    },
-    {
-      itemId: 2,
-      title: "Вторая кофеварка",
-      exchangeItem: "Урок немецкого",
-      userName: "Анна",
-    },
-    {
-      itemId: 3,
-      title: "Настольная лампа",
-      exchangeItem: "Книги",
-      userName: "Иван",
-    },
-    {
-      itemId: 4,
-      title: "Стул офисный",
-      exchangeItem: "Растение",
-      userName: "Ольга",
-    },
-    {
-      itemId: 5,
-      title: "Книги по программированию",
-      exchangeItem: "Кофемашина",
-      userName: "Дмитрий",
-    },
-  ]);
+  const navigate = useNavigate();
+
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const [favoriteItems, setFavoriteItems] = useState<Favorite[]>([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    loadUserFavorites();
+  }, []);
+
+  const loadUserFavorites = async () => {
+    try {
+      const userFavorites = await favoritesApi.getMyFavorites();
+      setFavoriteItems(userFavorites);
+    } catch (error) {
+      console.error("Error loading favorites:", error);
+    }
+  };
 
   const handleOpenChat = (itemId: number) => {
     setSelectedChat(itemId);
@@ -45,10 +37,13 @@ const Favorites = () => {
     setSelectedChat(null);
   };
 
-  const handleRemoveItem = (itemId: number) => {
+  const handleRemoveItem = async (itemId: number, favoriteSlug: string) => {
     setFavoriteItems((prevItems) =>
-      prevItems.filter((item) => item.itemId !== itemId)
+      prevItems.filter((item) => item.id !== itemId)
     );
+    console.log(itemId);
+
+    await favoritesApi.removeFromFavorites(favoriteSlug);
   };
 
   return (
@@ -60,16 +55,15 @@ const Favorites = () => {
 
       {/* Основной контейнер с разделением экрана */}
       <div className="flex gap-1">
-        {/* Список ListingCards - занимает 2/3 */}
         <div className="w-2/3 space-y-4">
           {favoriteItems.map((item) => (
             <ListingCard
-              key={item.itemId}
-              title={item.title}
-              exchangeItem={item.exchangeItem}
-              userName={item.userName}
-              onOpenChat={() => handleOpenChat(item.itemId)}
-              onRemove={() => handleRemoveItem(item.itemId)}
+              key={item.id}
+              title={item.name}
+              exchangeItem={item.price}
+              userName={item.author_username}
+              onOpenChat={() => handleOpenChat(item.id)}
+              onRemove={() => handleRemoveItem(item.id, item.slug)}
             />
           ))}
         </div>
@@ -77,9 +71,10 @@ const Favorites = () => {
         <div className="w-1/3">
           {selectedChat && (
             <div className="fixed top-[27vh] right-[11rem] h-screen w-[calc(33.333%-2rem)]">
-              <DialogueWindow 
+              <DialogueWindow
                 onClose={handleCloseChat}
-                itemId={selectedChat}
+                selectedChat={selectedChat}
+                userName=""
               />
             </div>
           )}

@@ -11,6 +11,6 @@ urlpatterns = [
     path('publications/<slug:publication_slug>/change-status/', change_publication_status, name='get_publication_by_slug'),
     path('publications/<slug:slug>/edit/', edit_publication, name='edit_publication'),
     path('favorites/add/', add_favorite, name='edit_publication'),
-    path('favorites/remove/<int:favorite_id>/', remove_favorite, name='edit_publication'),
+    path('favorites/remove/<slug:favorite_slug>/', remove_favorite, name='edit_publication'),
     path('favorites/my/', get_my_favorites, name='edit_publication'),
 ]

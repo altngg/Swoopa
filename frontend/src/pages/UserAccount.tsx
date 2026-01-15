@@ -27,12 +27,18 @@ import ListingCard from "../components/ListingCard";
 import { authApi, type User } from "../api/authApi";
 import { publicationsApi, type Publication } from "../api/publicationsApi";
 import { chatsApi, type Chat } from "../api/chatsApi";
+import { favoritesApi } from "../api/favoritesApi";
 // import { favoritesApi, type Favorite } from '../api/favoritesApi'; // ЗАКОММЕНТИРОВАНО
 
 const { Option } = Select;
 
 interface UserAccountProps {
   initialTab?: "ads" | "messages" | "offers";
+}
+
+interface Location {
+  id: number;
+  city: string;
 }
 
 interface OfferItem {
@@ -49,7 +55,7 @@ interface OfferItem {
   createdAt: string;
 }
 
-interface AdItem {
+export interface AdItem {
   mainImage: string | null | undefined;
   itemId: number;
   title: string;
@@ -76,16 +82,37 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [incomingOffers, setIncomingOffers] = useState<OfferItem[]>([]);
   const [userAds, setUserAds] = useState<AdItem[]>([]);
-  const [locations, setLocations] = useState<
-    Array<{ id: number; city: string }>
-  >([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(
     null
   );
   const [loading, setLoading] = useState(true);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<any[]>([]); // Изменил тип на any[]
-  const [chats, setchats] = useState<Chat[]>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
+
+  useEffect(() => {
+    // Проверяем наличие токена
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    loadUserData();
+    loadLocations();
+    loadFavorites();
+
+    if (location.pathname === "/user-account/messages") {
+      loadChats();
+      setActiveTab("messages");
+    } else if (location.pathname === "/user-account/offers") {
+      setActiveTab("offers");
+    } else {
+      loadUserPublications();
+      setActiveTab("ads");
+    }
+  }, [location]);
 
   // Функция для получения URL изображения
   const getImageUrl = (path: string | null | undefined): string => {
@@ -98,32 +125,9 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     return `http://localhost:8000${path}`;
   };
 
-  useEffect(() => {
-    // Проверяем наличие токена
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    loadUserData();
-    loadUserPublications();
-    loadLocations();
-    // loadFavorites(); // ЗАКОММЕНТИРОВАНО
-
-    if (location.pathname === "/user-account/messages") {
-      setActiveTab("messages");
-      loadChats();
-    } else if (location.pathname === "/user-account/offers") {
-      setActiveTab("offers");
-    } else {
-      setActiveTab("ads");
-    }
-  }, [location]);
-
   const loadChats = async () => {
     try {
-      setchats(await chatsApi.getMyMessages());
+      setChats(await chatsApi.getMyChats());
     } catch (error) {
       console.error("Error loading chats:", error);
     }
@@ -192,17 +196,14 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     }
   };
 
-  // ЗАКОММЕНТИРОВАНО из-за 403 ошибки
-  /*
   const loadFavorites = async () => {
     try {
       const favoritesData = await favoritesApi.getMyFavorites();
       setFavorites(favoritesData);
     } catch (error) {
-      console.error('Ошибка при загрузке избранного:', error);
+      console.error("Ошибка при загрузке избранного:", error);
     }
   };
-  */
 
   const loadIncomingOffers = async () => {
     // TODO: Реализовать API для загрузки предложений
