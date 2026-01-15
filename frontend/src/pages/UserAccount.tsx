@@ -35,8 +35,6 @@ interface UserAccountProps {
   initialTab?: "ads" | "messages" | "offers";
 }
 
-type ChatItem = Chat;
-
 interface OfferItem {
   id: number;
   fromUserId: string;
@@ -67,7 +65,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const [activeTab, setActiveTab] = useState<"ads" | "messages" | "offers">(
     initialTab
   );
-  const [selectedDialog, setSelectedDialog] = useState<DialogItem | null>(null);
+  const [selectedDialog, setSelectedDialog] = useState<Chat | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingCity, setIsEditingCity] = useState(false);
   const [userName, setUserName] = useState("");
@@ -289,9 +287,11 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     message.warning("Функция удаления аккаунта временно недоступна");
   };
 
-  const handleDialogClick = (chat: Chat) => {
-    const typedDialog: ChatItem = chat;
-    setSelectedDialog(typedDialog);
+  const handleDialogClick = async (chat: Chat) => {
+    const fullChat = await chatsApi.getChatByPublicationId(
+      chat.chat.publication.id
+    );
+    setSelectedDialog(fullChat);
   };
 
   const handleRemoveAd = async (itemId: number) => {

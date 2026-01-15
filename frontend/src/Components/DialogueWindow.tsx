@@ -88,15 +88,28 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
       {/* Область сообщений с прокруткой */}
       <div className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4">
-          {messages.map((message) => (
-            <DirectMessage
-              key={message.id}
-              message={message.text}
-              isCurrentUser={message.isCurrentUser}
-              time={message.time}
-              userName={message.isCurrentUser ? "Вы" : dialogUserName}
-            />
-          ))}
+          {messages.map((message) => {
+            const isCurrentUser = message.author_username === userName;
+            const timeCreated = new Date(message.created_at)
+              .toLocaleDateString("ru-RU", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              .replace(/, /g, " ");
+
+            return (
+              <DirectMessage
+                key={message.id}
+                message={message.text}
+                isCurrentUser={isCurrentUser}
+                time={timeCreated}
+                userName={isCurrentUser ? "Вы" : dialogUserName}
+              />
+            );
+          })}
         </div>
       </div>
 

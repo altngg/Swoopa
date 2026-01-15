@@ -47,7 +47,6 @@ def get_my_chats(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_chat_by_publication_id(request, publication_id):
-    data = request.data.copy()
     current_user = request.user
     
     try:
@@ -57,10 +56,11 @@ def get_chat_by_publication_id(request, publication_id):
             {'error': 'Publication not found'}, 
             status=status.HTTP_404_NOT_FOUND
         )
-    
+
     existing_chat = Chat.objects.filter(
-        publication=publication,
-        author=current_user
+        publication=publication
+    ).filter(
+        Q(author=current_user) | Q(publication__author=current_user)
     ).first()
 
     if existing_chat:
@@ -75,7 +75,12 @@ def get_chat_by_publication_id(request, publication_id):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
-    
+
+    if current_user == publication.author:
+        return Response(
+            {'error': 'You cannot create a chat with yourself for your own publication'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     chat = Chat.objects.create(
         publication=publication,
         author=current_user
