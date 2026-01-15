@@ -63,7 +63,6 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
 
   return (
     <div className="w-full h-full bg-white rounded-lg border border-gray-200 flex flex-col">
-      {/* Шапка диалога */}
       <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-lg">
         <div className="flex items-center gap-3">
           <Avatar icon={<UserOutlined />} className="bg-gray-300" />
@@ -85,7 +84,6 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
       {/* Информация о предложении */}
       {renderOfferInfo()}
 
-      {/* Область сообщений с прокруткой */}
       <div className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4">
           {messages.map((message) => {
@@ -113,7 +111,6 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
         </div>
       </div>
 
-      {/* Поле ввода сообщения */}
       <div className="flex-shrink-0 p-4 border-t border-gray-200">
         <MessageInputField onSendMessage={handleSendMessage} />
       </div>

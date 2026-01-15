@@ -27,8 +27,6 @@ import ListingCard from "../components/ListingCard";
 import { authApi, type User } from "../api/authApi";
 import { publicationsApi, type Publication } from "../api/publicationsApi";
 import { chatsApi, type Chat } from "../api/chatsApi";
-import { favoritesApi } from "../api/favoritesApi";
-// import { favoritesApi, type Favorite } from '../api/favoritesApi'; // ЗАКОММЕНТИРОВАНО
 
 const { Option } = Select;
 
@@ -88,7 +86,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   );
   const [loading, setLoading] = useState(true);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
-  const [favorites, setFavorites] = useState<any[]>([]); // Изменил тип на any[]
   const [chats, setChats] = useState<Chat[]>([]);
 
   useEffect(() => {
@@ -101,7 +98,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
 
     loadUserData();
     loadLocations();
-    loadFavorites();
 
     if (location.pathname === "/user-account/messages") {
       loadChats();
@@ -193,15 +189,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
       setLocations(locationsData);
     } catch (error) {
       console.error("Ошибка при загрузке локаций:", error);
-    }
-  };
-
-  const loadFavorites = async () => {
-    try {
-      const favoritesData = await favoritesApi.getMyFavorites();
-      setFavorites(favoritesData);
-    } catch (error) {
-      console.error("Ошибка при загрузке избранного:", error);
     }
   };
 
