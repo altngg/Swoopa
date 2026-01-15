@@ -4,6 +4,7 @@ from rest_framework import status
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 
+from users.models import User
 from main.models import Publication
 from offers.models import Offer, OfferStatus
 from .serializer import ChatSerializer, MessageSerializer
@@ -46,7 +47,7 @@ def get_my_chats(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_chat_by_publication_id(request, publication_id):
+def get_chat_by_publication_id(request, author_username, publication_id):
     current_user = request.user
     
     try:
@@ -56,11 +57,19 @@ def get_chat_by_publication_id(request, publication_id):
             {'error': 'Publication not found'}, 
             status=status.HTTP_404_NOT_FOUND
         )
+    
+    try:
+        chat_author = User.objects.get(username=author_username)
+    except Publication.DoesNotExist:
+        return Response(
+            {'error': 'Publication not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     existing_chat = Chat.objects.filter(
         publication=publication
     ).filter(
-        Q(author=current_user) | Q(publication__author=current_user)
+        (Q(author=current_user) | Q(publication__author=current_user)) & Q(author=chat_author)
     ).first()
 
     if existing_chat:

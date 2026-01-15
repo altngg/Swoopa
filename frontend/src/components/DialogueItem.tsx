@@ -1,6 +1,6 @@
-import { Avatar } from 'antd';
-import '../index.css'
-import { UserOutlined } from '@ant-design/icons';
+import { Avatar } from "antd";
+import "../index.css";
+import { UserOutlined } from "@ant-design/icons";
 
 interface Dialog {
   id: string;
@@ -16,13 +16,13 @@ interface DialogItemProps {
 
 const DialogueItem: React.FC<DialogItemProps> = ({ dialog }) => {
 
-    return (
+  return (
     <div className="flex items-center gap-3 p-3 border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
       {/* Profile Picture */}
       <div className="flex-shrink-0">
-        <Avatar 
-          size="default" 
-          icon={<UserOutlined />} 
+        <Avatar
+          size="default"
+          icon={<UserOutlined />}
           className="bg-gray-300"
         />
       </div>
@@ -42,9 +42,7 @@ const DialogueItem: React.FC<DialogItemProps> = ({ dialog }) => {
         </div>
 
         {/* Last Message (cropped) */}
-        <p className="text-sm text-gray-600 truncate">
-          {dialog.lastMessage}
-        </p>
+        <p className="text-sm text-gray-600 truncate">{dialog.lastMessage}</p>
       </div>
 
       {/* Unread Counter */}

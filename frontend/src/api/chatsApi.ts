@@ -47,8 +47,13 @@ export const chatsApi = {
   },
 
   // Get chat by publication id
-  getChatByPublicationId: async (publicationId: number): Promise<Chat> => {
-    const response = await apiClient.get(`/chats/${publicationId}`);
+  getChatByPublicationId: async (
+    publicationId: number,
+    author_username: string
+  ): Promise<Chat> => {
+    const response = await apiClient.get(
+      `/chats/${author_username}/${publicationId}/`
+    );
     console.log(response);
 
     return response.data;
