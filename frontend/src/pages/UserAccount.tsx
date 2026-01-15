@@ -210,10 +210,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     setIncomingOffers([]);
   };
 
-  const handleCloseChat = () => {
-    setSelectedDialog(null);
-  };
-
   const handleEditAd = (ad: AdItem) => {
     navigate("/add-post", {
       state: {
@@ -288,7 +284,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   };
 
   const handleDialogClick = async (chat: Chat) => {
-    console.log("Clicked chat:", chat.chat.id);
     const fullChat = await chatsApi.getChatByPublicationId(
       chat.chat.publication.id,
       chat.chat.author_username
@@ -705,7 +700,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                   <DialogueWindow
                     key={selectedDialog.chat.id}
                     onClose={() => {
-                      console.log("hee");
+                      setSelectedDialog(null);
                     }}
                     userName={userName}
                     selectedChat={selectedDialog}

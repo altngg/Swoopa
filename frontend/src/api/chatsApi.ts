@@ -35,8 +35,6 @@ export const chatsApi = {
       chat_id,
       text,
     });
-    console.log(response);
-
     return response.data;
   },
 
