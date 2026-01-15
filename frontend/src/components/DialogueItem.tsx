@@ -15,7 +15,6 @@ interface DialogItemProps {
 }
 
 const DialogueItem: React.FC<DialogItemProps> = ({ dialog }) => {
-
   return (
     <div className="flex items-center gap-3 p-3 border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
       {/* Profile Picture */}
@@ -55,6 +54,6 @@ const DialogueItem: React.FC<DialogItemProps> = ({ dialog }) => {
       )}
     </div>
   );
-}
+};
 
 export default DialogueItem;

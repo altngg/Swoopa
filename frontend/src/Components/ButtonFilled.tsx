@@ -1,27 +1,27 @@
-import React from 'react';
+import React from "react";
 
 interface ServiceButtonProps {
   children?: string;
   onClick?: () => void;
   className?: string;
-  rounded?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+  rounded?: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
   disabled?: boolean;
 }
 
-const ServiceButton: React.FC<ServiceButtonProps> = ({ 
-  children = 'Услуга', 
+const ServiceButton: React.FC<ServiceButtonProps> = ({
+  children = "Услуга",
   onClick,
-  className = '',
-  rounded = 'full',
-  disabled = false
+  className = "",
+  rounded = "full",
+  disabled = false,
 }) => {
   const roundedClass = {
-    sm: 'rounded',
-    md: 'rounded-md',
-    lg: 'rounded-lg',
-    xl: 'rounded-xl',
-    '2xl': 'rounded-2xl',
-    full: 'rounded-full'
+    sm: "rounded",
+    md: "rounded-md",
+    lg: "rounded-lg",
+    xl: "rounded-xl",
+    "2xl": "rounded-2xl",
+    full: "rounded-full",
   }[rounded];
 
   return (
@@ -46,7 +46,7 @@ const ServiceButton: React.FC<ServiceButtonProps> = ({
         focus:ring-gray-400       
         focus:ring-opacity-50                  
         leading-normal             
-        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
         ${className}               
       `}
     >

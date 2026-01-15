@@ -89,7 +89,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const [chats, setChats] = useState<Chat[]>([]);
 
   useEffect(() => {
-    // Проверяем наличие токена
     const token = localStorage.getItem("access_token");
     if (!token) {
       navigate("/login");
@@ -293,19 +292,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     }
   };
 
-  // ЗАКОММЕНТИРОВАНО из-за 403 ошибки
-  /*
-  const handleRemoveFavorite = async (favoriteId: number) => {
-    try {
-      await favoritesApi.remove(favoriteId);
-      setFavorites(prev => prev.filter(fav => fav.id !== favoriteId));
-      message.success('Удалено из избранного');
-    } catch (error) {
-      message.error('Ошибка при удалении из избранного');
-    }
-  };
-  */
-
   const handleOfferResponse = async (
     offerId: number,
     status: "accepted" | "rejected"
@@ -344,22 +330,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
       message.error("Ошибка при обновлении аватара");
     }
   };
-
-  // ЗАКОММЕНТИРОВАНО из-за 403 ошибки
-  /*
-  // Получаем избранные объявления для отображения
-  const getFavoriteAds = (): AdItem[] => {
-    return favorites.map(fav => ({
-      mainImage: fav.publication.main_image ? getImageUrl(fav.publication.main_image) : null,
-      itemId: fav.publication.id,
-      title: fav.publication.name,
-      exchangeItem: fav.publication.price === "0" || fav.publication.price.toLowerCase().includes('бесплатно') ? "Бесплатно" : `Цена: ${fav.publication.price}`,
-      userName: fav.publication.author_username || 'Автор',
-      isFree: fav.publication.price === "0" || fav.publication.price.toLowerCase().includes('бесплатно'),
-      slug: fav.publication.slug
-    }));
-  };
-  */
 
   if (loading) {
     return (

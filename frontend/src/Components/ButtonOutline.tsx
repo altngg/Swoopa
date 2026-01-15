@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface InvertedButtonProps {
   text: string;
@@ -6,10 +6,10 @@ interface InvertedButtonProps {
   className?: string;
 }
 
-const InvertedButton: React.FC<InvertedButtonProps> = ({ 
-  text, 
-  onClick, 
-  className = '' 
+const InvertedButton: React.FC<InvertedButtonProps> = ({
+  text,
+  onClick,
+  className = "",
 }) => {
   return (
     <button

@@ -9,10 +9,11 @@ interface DialogueWindowProps {
   onClose: () => void;
   selectedChat: Chat;
   userName: string;
-  offerType?: "exchange" | "free"; // Добавлено новое свойство
-  offerStatus?: "pending" | "accepted" | "rejected"; // Добавлено новое свойство
+  offerType?: "exchange" | "free";
+  offerStatus?: "pending" | "accepted" | "rejected";
 }
 
+// add publication preview as the first message
 const DialogueWindow: React.FC<DialogueWindowProps> = ({
   onClose,
   selectedChat,

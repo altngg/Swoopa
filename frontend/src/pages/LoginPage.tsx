@@ -1,11 +1,12 @@
-import React from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import AuthForm from '../components/AuthForm';
-import Navbar from '../components/Navbar';
+import React from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import AuthForm from "../components/AuthForm";
+import Navbar from "../components/Navbar";
 
 const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
+  const initialMode =
+    searchParams.get("mode") === "register" ? "register" : "login";
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -22,19 +23,25 @@ const LoginPage: React.FC = () => {
                 <div className="w-6 h-6 rounded-full bg-blue-500 mr-3 flex items-center justify-center">
                   <span className="text-white text-sm">✓</span>
                 </div>
-                <span className="text-gray-700">Обменивайтесь вещами бесплатно</span>
+                <span className="text-gray-700">
+                  Обменивайтесь вещами бесплатно
+                </span>
               </li>
               <li className="flex items-center">
                 <div className="w-6 h-6 rounded-full bg-blue-500 mr-3 flex items-center justify-center">
                   <span className="text-white text-sm">✓</span>
                 </div>
-                <span className="text-gray-700">Находите нужные предметы рядом с вами</span>
+                <span className="text-gray-700">
+                  Находите нужные предметы рядом с вами
+                </span>
               </li>
               <li className="flex items-center">
                 <div className="w-6 h-6 rounded-full bg-blue-500 mr-3 flex items-center justify-center">
                   <span className="text-white text-sm">✓</span>
                 </div>
-                <span className="text-gray-700">Безопасные сделки и сообщения</span>
+                <span className="text-gray-700">
+                  Безопасные сделки и сообщения
+                </span>
               </li>
               <li className="flex items-center">
                 <div className="w-6 h-6 rounded-full bg-blue-500 mr-3 flex items-center justify-center">
@@ -56,11 +63,17 @@ const LoginPage: React.FC = () => {
           <div className="text-center text-gray-500 text-sm">
             <p>© 2026 SWOOPA. Все права защищены.</p>
             <p className="mt-2">
-              <Link to="/privacy" className="hover:text-gray-700 transition-colors">
+              <Link
+                to="/privacy"
+                className="hover:text-gray-700 transition-colors"
+              >
                 Политика конфиденциальности
               </Link>
-              {' • '}
-              <Link to="/terms" className="hover:text-gray-700 transition-colors">
+              {" • "}
+              <Link
+                to="/terms"
+                className="hover:text-gray-700 transition-colors"
+              >
                 Условия использования
               </Link>
             </p>

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../index.css'
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../index.css";
 
 interface ListingCardProps {
   title?: string;
@@ -10,20 +10,20 @@ interface ListingCardProps {
   onOpenChat?: () => void;
   onRemove?: () => void;
   onEdit?: () => void;
-  mode?: 'favorites' | 'user-account';
-  mainImage?: string | null; // Добавьте это
+  mode?: "favorites" | "user-account";
+  mainImage?: string | null;
 }
 
-function ListingCard({ 
-  title = 'title', 
-  exchangeItem = 'exchangeItem', 
-  userName = 'Имя пользователя',
+function ListingCard({
+  title = "title",
+  exchangeItem = "exchangeItem",
+  userName = "Имя пользователя",
   isFree = false,
   onOpenChat,
   onRemove,
   onEdit,
-  mode = 'favorites',
-  mainImage // Примите mainImage
+  mode = "favorites",
+  mainImage,
 }: ListingCardProps) {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -60,27 +60,24 @@ function ListingCard({
 
   const handleUserNameClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate('/profile');
+    navigate("/profile");
   };
-
 
   return (
     <>
-      <div 
+      <div
         className="w-[50em] flex gap-4 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-default"
         onClick={handleCardClick}
       >
         {/* Картинка 164x164px */}
-        <div 
-          className="flex-shrink-0 w-[10.25rem] h-[10.25rem] rounded overflow-hidden bg-gray-200"
-        >
+        <div className="flex-shrink-0 w-[10.25rem] h-[10.25rem] rounded overflow-hidden bg-gray-200">
           {mainImage ? (
-            <img 
+            <img
               src={`http://localhost:8000${mainImage}`}
               alt={title}
               className="w-full h-full object-cover"
               onError={(e) => {
-                e.currentTarget.style.display = 'none';
+                e.currentTarget.style.display = "none";
               }}
             />
           ) : (
@@ -97,7 +94,7 @@ function ListingCard({
                 {title}
               </h3>
               <p className="text-sm text-gray-600 mt-1">
-                {isFree ? 'Отдам даром' : `Обмен на ${exchangeItem}`}
+                {isFree ? "Отдам даром" : `Обмен на ${exchangeItem}`}
               </p>
               <button
                 onClick={handleUserNameClick}
@@ -115,7 +112,7 @@ function ListingCard({
           </div>
 
           <div className="mt-auto flex justify-end">
-            {mode === 'favorites' ? (
+            {mode === "favorites" ? (
               <button
                 onClick={handleOpenChatClick}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
@@ -137,17 +134,17 @@ function ListingCard({
       {/* Диалог подтверждения удаления */}
       {showConfirmDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div 
+          <div
             className="bg-white rounded-lg p-6 w-[400px] shadow-xl"
             onClick={handleCardClick}
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {mode === 'favorites' 
-                ? 'Удалить из избранного?' 
-                : 'Удалить объявление?'}
+              {mode === "favorites"
+                ? "Удалить из избранного?"
+                : "Удалить объявление?"}
             </h3>
             <p className="text-gray-600 mb-6">
-              {mode === 'favorites'
+              {mode === "favorites"
                 ? `Вы уверены, что хотите удалить "${title}" из списка понравившегося?`
                 : `Вы уверены, что хотите удалить объявление "${title}"?`}
             </p>

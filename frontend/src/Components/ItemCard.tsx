@@ -70,7 +70,6 @@ function ItemCard({
       console.error("Ошибка при обновлении избранного:", error);
       const err = error as { response?: { status?: number } };
       if (err.response?.status === 401) {
-        // Если не авторизован, перенаправляем на логин
         navigate("/login");
       }
     } finally {

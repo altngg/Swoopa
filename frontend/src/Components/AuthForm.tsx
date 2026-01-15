@@ -71,7 +71,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ initialMode = "login" }) => {
           values.location_id = locations[0].id;
         }
 
-        // вот тут короче только запрос на регистрацию await ответ, и потом login, мб тут сломается
         await authApi.register({
           username: values.name!,
           email: values.email,

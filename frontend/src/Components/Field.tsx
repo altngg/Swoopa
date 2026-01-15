@@ -1,17 +1,21 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 const MessageInput = () => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
   const handleSend = () => {
     if (message.trim()) {
-      console.log('Отправка сообщения:', message);
-      setMessage('');
+      console.log("Отправка сообщения:", message);
+      setMessage("");
     }
   };
 
-  const handleKeyPress = (e: { key: string; shiftKey: unknown; preventDefault: () => void; }) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const handleKeyPress = (e: {
+    key: string;
+    shiftKey: unknown;
+    preventDefault: () => void;
+  }) => {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -22,14 +26,14 @@ const MessageInput = () => {
       <div className="flex items-center bg-white border border-gray-300 rounded-2xl px-4 py-3 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
         {/* Иконка "Смотрите также" слева */}
         <div className="mr-3 text-gray-400 hover:text-gray-600 cursor-pointer">
-          <svg 
-            width="20" 
-            height="20" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
             strokeLinejoin="round"
           >
             <circle cx="11" cy="11" r="8"></circle>
@@ -47,24 +51,24 @@ const MessageInput = () => {
           placeholder="Введите сообщение..."
           className="flex-1 bg-transparent border-none outline-none text-gray-800 placeholder-gray-500 text-sm"
         />
-        
+
         <button
           onClick={handleSend}
           disabled={!message.trim()}
           className={`ml-2 w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-            message.trim() 
-              ? 'bg-blue-500 hover:bg-blue-600 text-white cursor-pointer' 
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            message.trim()
+              ? "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
         >
-          <svg 
-            width="16" 
-            height="16" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
             strokeLinejoin="round"
             className="transform rotate-0"
           >

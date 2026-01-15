@@ -1,24 +1,22 @@
-import React, { useState } from 'react';
-import { SearchOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { SearchOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const SearchField: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Search query:', searchQuery);
-    
-    // Переходим на страницу feed с query параметром
+    console.log("Search query:", searchQuery);
+
     if (searchQuery.trim()) {
       navigate(`/feed?q=${encodeURIComponent(searchQuery.trim())}`);
     } else {
-      navigate('/feed');
+      navigate("/feed");
     }
-    
-    // Очищаем поле поиска
-    setSearchQuery('');
+
+    setSearchQuery("");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +42,7 @@ const SearchField: React.FC = () => {
                    text-gray-400 hover:text-blue-500 transition-colors duration-200
                    focus:outline-none focus:text-blue-500"
         >
-          <SearchOutlined style={{ fontSize: '24px', paddingLeft: '1rem' }}/>
+          <SearchOutlined style={{ fontSize: "24px", paddingLeft: "1rem" }} />
         </button>
       </form>
     </div>

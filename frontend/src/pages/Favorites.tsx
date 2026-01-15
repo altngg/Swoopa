@@ -6,6 +6,7 @@ import { favoritesApi, type Favorite } from "../api/favoritesApi";
 import { chatsApi, type Chat } from "../api/chatsApi";
 import { authApi } from "../api/authApi";
 
+// add open publication on select
 const Favorites = () => {
   const navigate = useNavigate();
 
