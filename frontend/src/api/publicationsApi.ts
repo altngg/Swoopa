@@ -77,7 +77,10 @@ export const publicationsApi = {
     slug: string,
     data: Partial<CreatePublicationData>
   ): Promise<Publication> => {
-    const response = await apiClient.patch(`/main/publications/${slug}`, data);
+    const response = await apiClient.patch(
+      `/main/publications/${slug}/edit/`,
+      data
+    );
     return response.data;
   },
 
