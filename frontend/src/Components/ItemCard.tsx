@@ -59,7 +59,7 @@ function ItemCard({
         const favorite = favorites.find((fav) => fav.id === itemId);
 
         if (favorite) {
-          await favoritesApi.removeFromFavorites(favorite.id);
+          await favoritesApi.removeFromFavorites(favorite.slug);
           setIsLiked(false);
         }
       } else {
