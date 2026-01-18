@@ -1,37 +1,33 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
+import type { Publication } from "../api/publicationsApi";
 
 interface ListingCardProps {
-  title?: string;
-  exchangeItem?: string;
-  userName?: string;
-  userId?: number;
-  isFree?: boolean;
+  item: Publication;
   onOpenChat?: () => void;
   onRemove?: () => void;
   onEdit?: () => void;
   mode?: "favorites" | "user-account";
-  mainImage?: string | null;
 }
 
 function ListingCard({
-  title = "title",
-  exchangeItem = "exchangeItem",
-  userName = "Имя пользователя",
-  userId,
-  isFree = false,
+  item,
   onOpenChat,
   onRemove,
   onEdit,
   mode = "favorites",
-  mainImage,
 }: ListingCardProps) {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const title = item.author_username;
+  const exchangeItem = item.price;
+  const mainImage = `http://localhost:8000${item.main_image}`;
+  const isFree = item.price === "0";
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    navigate(`/item/${item.slug}`);
   };
 
   const handleOpenChatClick = (e: React.MouseEvent) => {
@@ -62,8 +58,8 @@ function ListingCard({
 
   const handleUserNameClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (userId) {
-      navigate(`/users/${userId}`);
+    if (item.author_id) {
+      navigate(`/users/${item.author_id}`);
     } else {
       console.error("Вы уже в профиле пользователя.");
     }
@@ -106,7 +102,7 @@ function ListingCard({
                 onClick={handleUserNameClick}
                 className="text-sm text-gray-400 mt-1 hover:text-gray-600 transition-colors"
               >
-                {userName}
+                {item.author_username}
               </button>
             </div>
             <button

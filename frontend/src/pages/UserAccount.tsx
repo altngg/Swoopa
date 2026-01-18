@@ -53,16 +53,6 @@ interface OfferItem {
   createdAt: string;
 }
 
-export interface AdItem {
-  mainImage: string | null | undefined;
-  itemId: number;
-  title: string;
-  exchangeItem: string;
-  userName: string;
-  isFree?: boolean;
-  slug?: string;
-}
-
 const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -79,7 +69,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [incomingOffers, setIncomingOffers] = useState<OfferItem[]>([]);
-  const [userAds, setUserAds] = useState<AdItem[]>([]);
+  const [userAds, setUserAds] = useState<Publication[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(
     null
@@ -200,7 +190,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     setIncomingOffers([]);
   };
 
-  const handleEditAd = (ad: AdItem) => {
+  const handleEditAd = (ad: Publication) => {
     navigate("/add-post", {
       state: {
         mode: "edit",
@@ -283,10 +273,10 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
 
   const handleRemoveAd = async (itemId: number) => {
     try {
-      const ad = userAds.find((ad) => ad.itemId === itemId);
+      const ad = userAds.find((ad) => ad.id === itemId);
       if (ad?.slug) {
         await publicationsApi.deletePublication(ad.slug);
-        setUserAds((prevAds) => prevAds.filter((ad) => ad.itemId !== itemId));
+        setUserAds((prevAds) => prevAds.filter((ad) => ad.id !== itemId));
         message.success("Объявление удалено");
       }
     } catch (error) {
@@ -536,15 +526,11 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                 ) : (
                   userAds.map((item) => (
                     <ListingCard
-                      key={item.itemId}
-                      title={item.title}
-                      exchangeItem={item.exchangeItem}
-                      userName={item.userName}
-                      isFree={item.isFree}
+                      item={item}
+                      key={item.id}
                       onEdit={() => handleEditAd(item)}
-                      onRemove={() => handleRemoveAd(item.itemId)}
+                      onRemove={() => handleRemoveAd(item.id)}
                       mode="user-account"
-                      mainImage={item.mainImage}
                     />
                   ))
                 )}

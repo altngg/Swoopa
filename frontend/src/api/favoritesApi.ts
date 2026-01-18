@@ -1,18 +1,5 @@
 import apiClient from "./apiClient";
-
-export interface Favorite {
-  id: number;
-  name: string;
-  slug: string;
-  price: string;
-  description: string;
-  main_image: string | null;
-  publication_type: number;
-  status: number;
-  author_id: number;
-  author_username: string;
-  created_at: string;
-} // change to imported publication interface cause code duplication
+import type { Publication } from "./publicationsApi";
 
 export const favoritesApi = {
   addToFavorites: async (
@@ -31,7 +18,7 @@ export const favoritesApi = {
     return response.data;
   },
 
-  getMyFavorites: async (): Promise<Favorite[]> => {
+  getMyFavorites: async (): Promise<Publication[]> => {
     const response = await apiClient.get("/main/favorites/my/");
     console.log(response.data);
 

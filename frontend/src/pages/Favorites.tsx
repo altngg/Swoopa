@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import ListingCard from "../components/ListingCard";
 import DialogueWindow from "../components/DialogueWindow";
 import { useNavigate } from "react-router-dom";
-import { favoritesApi, type Favorite } from "../api/favoritesApi";
+import { favoritesApi } from "../api/favoritesApi";
 import { chatsApi, type Chat } from "../api/chatsApi";
 import { authApi } from "../api/authApi";
+import type { Publication } from "../api/publicationsApi";
 
 // add open publication on select
 const Favorites = () => {
@@ -12,7 +13,7 @@ const Favorites = () => {
 
   const [userName, setUserName] = useState<string>("");
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [favoriteItems, setFavoriteItems] = useState<Favorite[]>([]);
+  const [favoriteItems, setFavoriteItems] = useState<Publication[]>([]);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -76,12 +77,8 @@ const Favorites = () => {
         <div className="w-2/3 space-y-4">
           {favoriteItems.map((item) => (
             <ListingCard
+              item={item}
               key={item.id}
-              title={item.name}
-              exchangeItem={item.price}
-              userName={item.author_username}
-              userId={item.author_id}
-              mainImage={`http://localhost:8000${item.main_image}`}
               onOpenChat={() => handleOpenChat(item.id, userName)}
               onRemove={() => handleRemoveItem(item.id, item.slug)}
             />
