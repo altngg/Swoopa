@@ -80,6 +80,7 @@ const Favorites = () => {
               title={item.name}
               exchangeItem={item.price}
               userName={item.author_username}
+              userId={item.author_id}
               mainImage={`http://localhost:8000${item.main_image}`}
               onOpenChat={() => handleOpenChat(item.id, userName)}
               onRemove={() => handleRemoveItem(item.id, item.slug)}

@@ -6,6 +6,7 @@ interface ListingCardProps {
   title?: string;
   exchangeItem?: string;
   userName?: string;
+  userId?: number;
   isFree?: boolean;
   onOpenChat?: () => void;
   onRemove?: () => void;
@@ -18,6 +19,7 @@ function ListingCard({
   title = "title",
   exchangeItem = "exchangeItem",
   userName = "Имя пользователя",
+  userId,
   isFree = false,
   onOpenChat,
   onRemove,
@@ -60,7 +62,11 @@ function ListingCard({
 
   const handleUserNameClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate("/profile");
+    if (userId) {
+      navigate(`/users/${userId}`);
+    } else {
+      console.error("Вы уже в профиле пользователя.");
+    }
   };
 
   return (
