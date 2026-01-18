@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from users.models import User
-from .models import Publication, Favorite, Status
+from .models import Publication, Favorite, Status, PublicationImage
 from .serializer import PublicationSerializer
 
 
@@ -63,12 +63,7 @@ def create_publication(request):
 
     additional_images = request.FILES.getlist('additional_images')
     if additional_images:
-        if 'main_image' not in request.FILES:
-            data['main_image'] = additional_images[0]
-            remaining_images = additional_images[1:] if len(additional_images) > 1 else []
-            data.setlist('additional_images', remaining_images)
-        else:
-            data.setlist('additional_images', additional_images)
+        data.setlist('additional_images', additional_images)
     
     serializer = PublicationSerializer(data=data, context={'request': request})
     
@@ -104,15 +99,10 @@ def edit_publication(request, slug):
         partial = request.method == 'PATCH'
         
         data = request.data.copy()
-        additional_images = request.FILES.getlist('additional_images')
-        
+
+        additional_images = request.FILES.getlist('additional_images')        
         if additional_images:
-            if 'main_image' not in request.FILES and not publication.main_image:
-                data['main_image'] = additional_images[0]
-                remaining_images = additional_images[1:] if len(additional_images) > 1 else []
-                data.setlist('additional_images', remaining_images)
-            else:
-                data.setlist('additional_images', additional_images)
+            data.setlist('additional_images', additional_images)
         
         serializer = PublicationSerializer(
             publication, 

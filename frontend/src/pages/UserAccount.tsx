@@ -161,9 +161,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
           userName: publication.author_username,
           isFree,
           slug: publication.slug,
-          mainImage: publication.main_image
-            ? getImageUrl(publication.main_image)
-            : null,
         };
       });
 

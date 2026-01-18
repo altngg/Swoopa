@@ -140,7 +140,6 @@ const Feed = () => {
                     exchangeItem={pub.price}
                     slug={pub.slug}
                     isFree={parseFloat(pub.price) === 0 || !pub.price}
-                    mainImage={pub.main_image}
                     images={firstImage}
                   />
                 );

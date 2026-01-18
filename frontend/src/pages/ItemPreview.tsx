@@ -33,7 +33,6 @@ interface Publication {
   slug: string;
   price: string;
   description: string;
-  main_image: string | null;
   publication_type_name: string;
   status_name: string;
   author_username: string;
@@ -83,17 +82,7 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
         // Формируем массив всех изображений: main_image + images
         const imagesArray: string[] = [];
 
-        console.log("🟡 main_image из API:", publication.main_image);
         console.log("🟡 images из API:", publication.images);
-
-        // Добавляем main_image если он есть
-        if (publication.main_image) {
-          const mainImageUrl = getImageUrl(publication.main_image);
-          console.log("🟡 main_image URL:", mainImageUrl);
-          if (mainImageUrl) {
-            imagesArray.push(mainImageUrl);
-          }
-        }
 
         // Добавляем дополнительные изображения
         if (publication.images && Array.isArray(publication.images)) {
@@ -282,7 +271,6 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
   console.log("📊 Название товара:", itemData.name);
   console.log("📊 Author ID для перехода:", itemData.author_id);
   console.log("📊 Username:", itemData.author_username);
-  console.log("📊 Main image путь:", itemData.main_image);
   console.log("📊 Images array (объекты):", itemData.images);
   console.log("📊 Всего изображений для галереи:", allImages.length);
   console.log("📊 Изображения для галереи:", allImages);

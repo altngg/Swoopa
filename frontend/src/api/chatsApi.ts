@@ -16,7 +16,6 @@ export interface Chat {
       slug: string;
       price: string;
       description: string;
-      main_image: string | null;
       publication_type: number;
       status: number;
       author_username: string;

@@ -6,10 +6,8 @@ import InvertedButton from "../components/ButtonOutline";
 import { publicationsApi } from "../api/publicationsApi";
 
 interface ExistingImage {
-  id?: number;
-  url: string;
-  file?: File;
-  isExisting?: boolean;
+  id: number;
+  image: string;
 }
 
 const AddPost = () => {
@@ -20,8 +18,11 @@ const AddPost = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [exchangeFor, setExchangeFor] = useState("");
+
   const [photos, setPhotos] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
+  const [imagesToDelete, setImagesToDelete] = useState<ExistingImage[]>([]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Загружаем данные для редактирования, если они есть
@@ -36,20 +37,12 @@ const AddPost = () => {
 
       const images: ExistingImage[] = [];
 
-      if (adData.main_image) {
-        images.push({
-          url: `http://localhost:8000${adData.main_image}`,
-          isExisting: true,
-        });
-      }
-
-      if (adData.images && Array.isArray(adData.images)) {
+      if (adData.images) {
         adData.images.forEach((image: any) => {
-          if (image.image && image.image !== adData.main_image) {
+          if (image.image) {
             images.push({
               id: image.id,
-              url: `http://localhost:8000${image.image}`,
-              isExisting: true,
+              image: `http://localhost:8000${image.image}`,
             });
           }
         });
@@ -98,6 +91,12 @@ const AddPost = () => {
   };
 
   const handleRemoveExistingImage = (index: number) => {
+    const imageToRemove = existingImages[index];
+
+    if (imageToRemove.id) {
+      setImagesToDelete((prev) => [...prev, imageToRemove]);
+    }
+
     const newExistingImages = [...existingImages];
     newExistingImages.splice(index, 1);
     setExistingImages(newExistingImages);
@@ -111,8 +110,7 @@ const AddPost = () => {
       publication_type_slug: postType,
       status: 1, // по хорошему сделать статус по slug/sysname
       additional_images: photos,
-      // При редактировании нужно также передать информацию об удаленных изображениях
-      // Это зависит от вашего API
+      images_to_delete_ids: imagesToDelete.map((item) => item.id),
     };
 
     console.log(isEditMode ? "Редактирование:" : "Публикация:", data);
@@ -266,7 +264,7 @@ const AddPost = () => {
                 {existingImages.map((image, index) => (
                   <div key={`existing-${index}`} className="relative">
                     <img
-                      src={image.url}
+                      src={image.image}
                       alt={`Существующее изображение ${index + 1}`}
                       className="w-[76px] h-[76px] object-cover rounded"
                     />

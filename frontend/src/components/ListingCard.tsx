@@ -22,7 +22,6 @@ function ListingCard({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const title = item.name;
   const exchangeItem = item.price;
-  const mainImage = `http://localhost:8000${item.main_image}`;
   const isFree = item.price === "0" || !item.price;
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -73,9 +72,9 @@ function ListingCard({
       >
         {/* Картинка 164x164px */}
         <div className="flex-shrink-0 w-[10.25rem] h-[10.25rem] rounded overflow-hidden bg-gray-200">
-          {mainImage ? (
+          {item.images.length > 0 ? (
             <img
-              src={mainImage}
+              src={`http://localhost:8000${item.images[0].image}`}
               alt={title}
               className="w-full h-full object-cover"
               onError={(e) => {

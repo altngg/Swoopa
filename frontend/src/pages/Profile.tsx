@@ -24,7 +24,6 @@ interface Publication {
   slug: string;
   price: string;
   description: string;
-  main_image: string | null;
   publication_type_name: string;
   status_name: string;
   author_username: string;
@@ -195,7 +194,6 @@ const Profile = () => {
                           : publication.price
                       }
                       slug={publication.slug}
-                      mainImage={publication.main_image}
                       isFree={publication.price === "0"}
                     />
                   ))}

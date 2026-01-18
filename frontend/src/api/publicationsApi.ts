@@ -6,7 +6,6 @@ export interface Publication {
   slug: string;
   price: string;
   description: string;
-  main_image: string | null;
   publication_type_name: string;
   publication_type?: number;
   status_name: string;
@@ -23,7 +22,6 @@ export interface CreatePublicationData {
   description: string;
   publication_type_slug: string;
   status: number;
-  main_image?: File; // в целом считаю что это поле можно удалить с бэка, и фронт будет тянуть просто первую фотку из всех
   publication_images?: File[];
 }
 
@@ -40,7 +38,6 @@ export interface Publication {
   slug: string;
   price: string;
   description: string;
-  main_image: string | null;
   publication_type_name: string;
   publication_type?: number;
   status_name: string;
