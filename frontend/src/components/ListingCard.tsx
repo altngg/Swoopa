@@ -23,7 +23,7 @@ function ListingCard({
   const title = item.author_username;
   const exchangeItem = item.price;
   const mainImage = `http://localhost:8000${item.main_image}`;
-  const isFree = item.price === "0";
+  const isFree = item.price === "0" || !item.price;
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();

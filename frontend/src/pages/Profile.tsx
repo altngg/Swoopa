@@ -190,7 +190,7 @@ const Profile = () => {
                       itemId={publication.id}
                       title={publication.name}
                       exchangeItem={
-                        publication.price === "0"
+                        publication.price === "0" || !publication.price
                           ? "Бесплатно"
                           : publication.price
                       }
