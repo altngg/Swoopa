@@ -76,7 +76,7 @@ const AddPost = () => {
     console.log(isEditMode ? "Редактирование:" : "Публикация:", data);
 
     if (isEditMode) {
-      publicationsApi.updatePublication("godheavens", data); // ВОТ ТУТ СЛАГ
+      publicationsApi.updatePublication(location.state?.adData?.slug, data);
       alert("Объявление обновлено!");
     } else {
       publicationsApi.createPublication(data);

@@ -167,7 +167,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
           exchangeItem:
             pub.price === "0" || pub.price.toLowerCase().includes("бесплатно")
               ? "Бесплатно"
-              : `Цена: ${pub.price}`,
+              : pub.price,
           userName: pub.author_username,
           isFree:
             pub.price === "0" || pub.price.toLowerCase().includes("бесплатно"),
