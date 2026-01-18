@@ -29,6 +29,17 @@ interface Publication {
   images: PublicationImage[];
 }
 
+interface Chat {
+  chat: {
+    id: number;
+    publication: {
+      id: number;
+      name: string;
+    };
+    author_username: string;
+  };
+}
+
 const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -37,7 +48,7 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
-  const [existingChatId, setExistingChatId] = useState<number | null>(null);
+  const [existingChats, setExistingChats] = useState<Chat[]>([]);
   const [checkingChats, setCheckingChats] = useState(false);
   const [showExchangeModal, setShowExchangeModal] = useState(false);
   const [userItems, setUserItems] = useState<any[]>([]);
@@ -88,20 +99,17 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
       try {
         // Загружаем ВСЕ чаты пользователя
         const allChats = await chatsApi.getMyChats();
-        console.log("Все чаты пользователя:", allChats);
         
         // Ищем чат с этой публикацией
         const existingChat = allChats.find(
           (chat: any) => chat.chat.publication.id === itemData.id
         );
         
-        console.log("Найденный чат для публикации", itemData.id, ":", existingChat);
+        setExistingChats(allChats);
         
         if (existingChat) {
-          setExistingChatId(existingChat.chat.id);
           console.log("Чат уже существует, ID:", existingChat.chat.id);
         } else {
-          setExistingChatId(null);
           console.log("Чат не найден, можно создать новый");
         }
       } catch (error) {
@@ -115,6 +123,14 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
       checkExistingChats();
     }
   }, [currentUser, itemData]);
+
+  // Найти существующий чат для этой публикации
+  const findExistingChatForPublication = () => {
+    if (!itemData || existingChats.length === 0) return null;
+    return existingChats.find(chat => chat.chat.publication.id === itemData.id);
+  };
+
+  const existingChat = findExistingChatForPublication();
 
   // Функция создания чата (ВЫЗЫВАЕТСЯ ТОЛЬКО ЕСЛИ ЧАТА ЕЩЕ НЕТ)
   const handleCreateChat = async (offerType: "exchange" | "free", selectedItemId?: number) => {
@@ -130,10 +146,8 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
     }
 
     // Если чат уже существует - переходим в него
-    if (existingChatId) {
-      navigate(`/user-account/messages`, {
-        state: { openChatId: existingChatId }
-      });
+    if (existingChat) {
+      navigate(`/user-account/messages/${existingChat.chat.id}`);
       return;
     }
 
@@ -149,7 +163,6 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
       );
       
       console.log("✅ Чат создан:", chatData);
-      setExistingChatId(chatData.chat.id);
       
       // 2. Добавляем первое сообщение
       const greetingMessage = offerType === "exchange" 
@@ -160,10 +173,8 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
       await chatsApi.addMessage(chatData.chat.id, greetingMessage);
       console.log("✅ Первое сообщение добавлено");
       
-      // 3. Переходим в чат
-      navigate(`/user-account/messages`, {
-        state: { openChatId: chatData.chat.id }
-      });
+      // 3. Переходим в чат с ID в URL
+      navigate(`/user-account/messages/${chatData.chat.id}`);
       
       message.success("Чат создан! Переход к сообщениям...");
       
@@ -173,10 +184,7 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
       // Если чат уже существует (статус 200)
       if (error.response?.status === 200 || error.response?.status === 201) {
         const chatData = error.response.data;
-        setExistingChatId(chatData.chat.id);
-        navigate(`/user-account/messages`, {
-          state: { openChatId: chatData.chat.id }
-        });
+        navigate(`/user-account/messages/${chatData.chat.id}`);
         message.info("Чат уже существует. Переход к сообщениям...");
       } else {
         message.error("Ошибка при создании чата");
@@ -194,10 +202,8 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
     }
 
     // Если чат уже существует - переходим в него
-    if (existingChatId) {
-      navigate(`/user-account/messages`, {
-        state: { openChatId: existingChatId }
-      });
+    if (existingChat) {
+      navigate(`/user-account/messages/${existingChat.chat.id}`);
       return;
     }
 
@@ -220,10 +226,8 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
     }
 
     // Если чат уже существует - переходим в него
-    if (existingChatId) {
-      navigate(`/user-account/messages`, {
-        state: { openChatId: existingChatId }
-      });
+    if (existingChat) {
+      navigate(`/user-account/messages/${existingChat.chat.id}`);
       return;
     }
 
@@ -231,10 +235,8 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
   };
 
   const handleGoToChat = () => {
-    if (existingChatId) {
-      navigate(`/user-account/messages`, {
-        state: { openChatId: existingChatId }
-      });
+    if (existingChat) {
+      navigate(`/user-account/messages/${existingChat.chat.id}`);
     }
   };
 
@@ -277,7 +279,7 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
       return { text: "Проверка...", isExisting: false, disabled: true };
     }
 
-    if (existingChatId) {
+    if (existingChat) {
       return { text: "Перейти в чат", isExisting: true, disabled: false };
     }
 

@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Avatar,
   Button,
@@ -56,6 +57,8 @@ interface OfferItem {
 const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { chatId: urlChatId } = useParams<{ chatId?: string }>();
+  
   const [activeTab, setActiveTab] = useState<"ads" | "messages" | "offers">(
     initialTab
   );
@@ -77,61 +80,85 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const [loading, setLoading] = useState(true);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [chatsLoading, setChatsLoading] = useState(false);
 
-useEffect(() => {
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    navigate("/login");
-    return;
-  }
-
-  loadUserData();
-  loadLocations();
-
-  // Проверяем, нужно ли открыть конкретный чат
-  const state = location.state as { openChatId?: number };
-  
-  if (location.pathname === "/user-account/messages") {
-    loadChats().then(() => {
-      if (state?.openChatId) {
-        // Находим чат в загруженных чатах
-        const chatToOpen = chats.find(c => c.chat.id === state.openChatId);
-        if (chatToOpen) {
-          setSelectedDialog(chatToOpen);
-          message.info("Чат открыт");
-        } else {
-          // Если чат не найден в списке, загружаем его отдельно
-          // (опционально, можно добавить логику загрузки конкретного чата по ID)
-        }
-        
-        // Очищаем состояние чтобы не открывать снова при обновлении
-        navigate(location.pathname, { replace: true, state: {} });
-      }
-    });
-    setActiveTab("messages");
-  } else if (location.pathname === "/user-account/offers") {
-    setActiveTab("offers");
-  } else {
-    loadUserPublications();
-    setActiveTab("ads");
-  }
-}, [location]);
-
-// Добавьте функцию для открытия конкретного чата
-const handleOpenSpecificChat = async (chatId: number) => {
-  try {
-    // Здесь нужно реализовать получение чата по ID
-    // Пока что используем существующий список чатов
-    const chats = await chatsApi.getMyChats();
-    const chat = chats.find(c => c.chat.id === chatId);
-    if (chat) {
-      setSelectedDialog(chat);
-      setActiveTab("messages");
+  // Основной useEffect
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      navigate("/login");
+      return;
     }
-  } catch (error) {
-    console.error("Ошибка при загрузке чата:", error);
-  }
-};
+
+    loadUserData();
+    loadLocations();
+
+    // Определяем активную вкладку на основе URL
+    if (location.pathname.includes("/messages")) {
+      setActiveTab("messages");
+      
+      // Загружаем чаты
+      loadChats().then((loadedChats) => {
+        // Если в URL есть chatId, открываем этот чат
+        if (urlChatId) {
+          const chatIdNum = parseInt(urlChatId);
+          openChatById(chatIdNum, loadedChats);
+        }
+      });
+    } else if (location.pathname.includes("/offers")) {
+      setActiveTab("offers");
+    } else {
+      loadUserPublications();
+      setActiveTab("ads");
+    }
+  }, [location, urlChatId]);
+
+  // Функция для открытия чата по ID из URL
+  const openChatById = async (chatId: number, loadedChats: Chat[]) => {
+    console.log("🟡 Открываем чат из URL, ID:", chatId);
+    
+    // 1. Пробуем найти в загруженных чатах
+    let chatToOpen = loadedChats.find(c => c.chat.id === chatId);
+    
+    if (chatToOpen) {
+      console.log("✅ Чат найден в списке");
+      setSelectedDialog(chatToOpen);
+      return;
+    }
+    
+    // 2. Если не нашли, пробуем загрузить чат по publication_id
+    console.log("🟡 Чат не найден в списке, ищем информацию...");
+    
+    // Пробуем найти информацию о чате в localStorage
+    const chatInfo = localStorage.getItem(`chat_info_${chatId}`);
+    if (chatInfo) {
+      try {
+        const { publicationId, authorUsername } = JSON.parse(chatInfo);
+        console.log("🟡 Загружаем чат по публикации:", publicationId, authorUsername);
+        
+        const directChat = await chatsApi.getChatByPublicationId(
+          publicationId,
+          authorUsername
+        );
+        
+        if (directChat.chat.id === chatId) {
+          console.log("✅ Чат загружен напрямую");
+          setSelectedDialog(directChat);
+          
+          // Добавляем в список чатов, если его там нет
+          if (!loadedChats.some(c => c.chat.id === directChat.chat.id)) {
+            setChats(prev => [...prev, directChat]);
+          }
+        }
+      } catch (error) {
+        console.error("❌ Ошибка при загрузке чата:", error);
+        message.warning("Не удалось загрузить чат");
+      }
+    } else {
+      console.log("❌ Информация о чате не найдена в localStorage");
+      message.warning("Чат не найден");
+    }
+  };
 
   // Функция для получения URL изображения
   const getImageUrl = (path: string | null | undefined): string => {
@@ -144,11 +171,20 @@ const handleOpenSpecificChat = async (chatId: number) => {
     return `http://localhost:8000${path}`;
   };
 
-  const loadChats = async () => {
+  const loadChats = async (): Promise<Chat[]> => {
     try {
-      setChats(await chatsApi.getMyChats());
+      setChatsLoading(true);
+      console.log("🟡 Загружаем чаты...");
+      const loadedChats = await chatsApi.getMyChats();
+      console.log("✅ Чаты загружены:", loadedChats.length, "шт");
+      setChats(loadedChats);
+      return loadedChats;
     } catch (error) {
       console.error("Error loading chats:", error);
+      message.error("Ошибка при загрузке чатов");
+      return [];
+    } finally {
+      setChatsLoading(false);
     }
   };
 
@@ -172,7 +208,6 @@ const handleOpenSpecificChat = async (chatId: number) => {
     } catch (error) {
       console.error("Ошибка при загрузке данных пользователя:", error);
       message.error("Ошибка при загрузке данных пользователя");
-      // Не делаем редирект, чтобы пользователь мог остаться на странице
     } finally {
       setLoading(false);
     }
@@ -215,8 +250,6 @@ const handleOpenSpecificChat = async (chatId: number) => {
   };
 
   const loadIncomingOffers = async () => {
-    // TODO: Реализовать API для загрузки предложений
-    // Пока оставляем пустой массив
     setIncomingOffers([]);
   };
 
@@ -287,13 +320,23 @@ const handleOpenSpecificChat = async (chatId: number) => {
   };
 
   const handleDeleteAccount = async () => {
-    // TODO: Реализовать API для удаления аккаунта
     console.log("Удаление аккаунта");
     setShowDeleteConfirm(false);
     message.warning("Функция удаления аккаунта временно недоступна");
   };
 
   const handleDialogClick = async (chat: Chat) => {
+    // Меняем URL при клике на чат
+    navigate(`/user-account/messages/${chat.chat.id}`);
+    
+    // Сохраняем информацию о чате в localStorage для будущих загрузок
+    localStorage.setItem(`chat_info_${chat.chat.id}`, JSON.stringify({
+      publicationId: chat.chat.publication.id,
+      authorUsername: chat.chat.author_username,
+      timestamp: new Date().toISOString()
+    }));
+    
+    // Загружаем полные данные чата
     const fullChat = await chatsApi.getChatByPublicationId(
       chat.chat.publication.id,
       chat.chat.author_username
@@ -319,10 +362,7 @@ const handleOpenSpecificChat = async (chatId: number) => {
     offerId: number,
     status: "accepted" | "rejected"
   ) => {
-    // TODO: Реализовать API для ответа на предложения
     console.log(`Ответ на предложение ${offerId}: ${status}`);
-
-    // Обновляем локальное состояние
     setIncomingOffers((prev) =>
       prev.map((offer) => (offer.id === offerId ? { ...offer, status } : offer))
     );
@@ -333,7 +373,13 @@ const handleOpenSpecificChat = async (chatId: number) => {
 
   const navigateToTab = (tab: "ads" | "messages" | "offers") => {
     setActiveTab(tab);
-    navigate(`/user-account${tab !== "ads" ? `/${tab}` : ""}`);
+    if (tab === "messages") {
+      navigate("/user-account/messages");
+    } else if (tab === "offers") {
+      navigate("/user-account/offers");
+    } else {
+      navigate("/user-account");
+    }
   };
 
   const getPendingOffersCount = () => {
@@ -352,6 +398,13 @@ const handleOpenSpecificChat = async (chatId: number) => {
       console.error("Ошибка при обновлении аватара:", error);
       message.error("Ошибка при обновлении аватара");
     }
+  };
+
+  // Функция для закрытия чата
+  const handleCloseChat = () => {
+    setSelectedDialog(null);
+    // Убираем chatId из URL
+    navigate("/user-account/messages");
   };
 
   if (loading) {
@@ -469,23 +522,6 @@ const handleOpenSpecificChat = async (chatId: number) => {
             </div>
 
             <div className="w-full space-y-1">
-              {/* <button
-                className={`w-full text-left h-10 px-3 py-2 flex items-center justify-between rounded transition-colors ${
-                  activeTab === "offers"
-                    ? "bg-blue-50 text-blue-600 font-medium"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-                onClick={() => navigateToTab("offers")}
-              >
-                <span className="flex items-center">
-                  <BellOutlined className="mr-2" />
-                  Предложения
-                </span>
-                {getPendingOffersCount() > 0 && (
-                  <Badge count={getPendingOffersCount()} size="small" />
-                )}
-              </button> */}
-
               <button
                 className={`w-full text-left h-10 px-3 py-2 flex items-center justify-start rounded transition-colors ${
                   activeTab === "messages"
@@ -670,15 +706,18 @@ const handleOpenSpecificChat = async (chatId: number) => {
                   selectedDialogId={selectedDialog?.chat.id}
                   userName={userName}
                 />
+                {chatsLoading && (
+                  <div className="text-center py-4">
+                    <Spin size="small" />
+                  </div>
+                )}
               </div>
 
               <div className="flex-1">
                 {selectedDialog ? (
                   <DialogueWindow
                     key={selectedDialog.chat.id}
-                    onClose={() => {
-                      setSelectedDialog(null);
-                    }}
+                    onClose={handleCloseChat}
                     userName={userName}
                     selectedChat={selectedDialog}
                   />
