@@ -73,7 +73,7 @@ function ListingCard({
         <div className="flex-shrink-0 w-[10.25rem] h-[10.25rem] rounded overflow-hidden bg-gray-200">
           {mainImage ? (
             <img
-              src={`http://localhost:8000${mainImage}`}
+              src={mainImage}
               alt={title}
               className="w-full h-full object-cover"
               onError={(e) => {
