@@ -96,7 +96,7 @@ export const publicationsApi = {
   },
 
   deletePublication: async (slug: string): Promise<void> => {
-    await apiClient.delete(`/main/publications/${slug}`);
+    await apiClient.delete(`/main/publications/${slug}/edit/`);
   },
 
   search: async (query: string): Promise<Publication[]> => {
