@@ -1,24 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
-import { HeartOutlined, HeartFilled } from "@ant-design/icons";
+import { HeartOutlined, HeartFilled, MessageOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import Gallery from "../components/Gallery";
 import ButtonFilled from "../components/ButtonFilled";
-import { Modal, message } from "antd";
+import { Modal, message, Spin } from "antd";
 import { publicationsApi } from "../api/publicationsApi";
-// import { favoritesApi } from '../api/favoritesApi';
-// import { authApi } from '../api/authApi';
-
-interface ItemPreviewProps {
-  isFree?: boolean;
-}
-
-interface UserItem {
-  id: number;
-  name: string;
-  exchangeFor?: string;
-}
+import { chatsApi } from '../api/chatsApi';
+import { authApi } from '../api/authApi';
 
 interface PublicationImage {
   id: number;
@@ -33,219 +23,235 @@ interface Publication {
   slug: string;
   price: string;
   description: string;
-  publication_type_name: string;
-  status_name: string;
   author_username: string;
   author_id: number;
   created_at: string;
   images: PublicationImage[];
 }
 
-const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
+const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [isLiked, setIsLiked] = useState(false);
-  const [showExchangeModal, setShowExchangeModal] = useState(false);
-  const [isOfferSent, setIsOfferSent] = useState(false);
-  const [userItems, setUserItems] = useState<UserItem[]>([]);
-  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  
   const [itemData, setItemData] = useState<Publication | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [favoriteId, setFavoriteId] = useState<number | null>(null);
-  const [allImages, setAllImages] = useState<string[]>([]);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
+  const [existingChatId, setExistingChatId] = useState<number | null>(null);
+  const [checkingChats, setCheckingChats] = useState(false);
+  const [showExchangeModal, setShowExchangeModal] = useState(false);
+  const [userItems, setUserItems] = useState<any[]>([]);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
-  // Локальная функция для получения URL изображения
-  const getImageUrl = (path: string | null | undefined): string => {
-    if (!path) return "";
-    if (typeof path !== "string") {
-      console.error("❌ getImageUrl получил не строку:", path);
-      return "";
-    }
-    if (path.startsWith("http")) return path;
-    return `http://localhost:8000${path}`;
-  };
-
-  // Получение данных товара
+  // Загружаем пользователя
   useEffect(() => {
-    const fetchItemData = async () => {
-      if (!id) return;
+    const loadUser = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (token) {
+          const user = await authApi.getCurrentUser();
+          setCurrentUser(user);
+        }
+      } catch (error) {
+        console.error("Ошибка загрузки пользователя:", error);
+      }
+    };
+    loadUser();
+  }, []);
 
+  // Загружаем данные товара
+  useEffect(() => {
+    const loadItemData = async () => {
+      if (!id) return;
       try {
         setLoading(true);
-        console.log("🟡 Начинаем загрузку публикации по slug:", id);
-
         const publication = await publicationsApi.getPublicationBySlug(id);
-        console.log("✅ Получены данные публикации:", publication);
         setItemData(publication);
-
-        // Формируем массив всех изображений: main_image + images
-        const imagesArray: string[] = [];
-
-        console.log("🟡 images из API:", publication.images);
-
-        // Добавляем дополнительные изображения
-        if (publication.images && Array.isArray(publication.images)) {
-          console.log(
-            `🟡 Найдено ${publication.images.length} дополнительных изображений`
-          );
-
-          publication.images.forEach(
-            (imgObj: PublicationImage, index: number) => {
-              console.log(`🟡 Объект изображения ${index}:`, imgObj);
-
-              // Извлекаем путь из объекта
-              if (imgObj && imgObj.image) {
-                const imageUrl = getImageUrl(imgObj.image);
-                console.log(`🟡 Изображение ${index} URL:`, imageUrl);
-                if (imageUrl && !imagesArray.includes(imageUrl)) {
-                  imagesArray.push(imageUrl);
-                }
-              } else {
-                console.warn(
-                  `⚠️ Объект изображения ${index} не содержит поле image:`,
-                  imgObj
-                );
-              }
-            }
-          );
-        } else {
-          console.log(
-            "ℹ️ images не является массивом или пустой:",
-            publication.images
-          );
-        }
-
-        console.log("✅ Всего изображений для галереи:", imagesArray.length);
-        console.log("✅ Список изображений:", imagesArray);
-        setAllImages(imagesArray);
-
-        // Временные заглушки для отображения
-        setUserItems([]);
-        setCurrentUser(null);
       } catch (error) {
-        console.error("❌ Ошибка при загрузке товара:", error);
-        message.error("Не удалось загрузить данные товара");
+        console.error("Ошибка загрузки товара:", error);
+        message.error("Не удалось загрузить товар");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchItemData();
+    loadItemData();
   }, [id]);
 
-  // Функция для обработки клика по лайку
-  const handleLikeClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+  // После загрузки пользователя и товара проверяем существующие чаты
+  useEffect(() => {
+    const checkExistingChats = async () => {
+      if (!currentUser || !itemData || currentUser.id === itemData.author_id) {
+        return;
+      }
 
-    if (!itemData) return;
+      setCheckingChats(true);
+      try {
+        // Загружаем ВСЕ чаты пользователя
+        const allChats = await chatsApi.getMyChats();
+        console.log("Все чаты пользователя:", allChats);
+        
+        // Ищем чат с этой публикацией
+        const existingChat = allChats.find(
+          (chat: any) => chat.chat.publication.id === itemData.id
+        );
+        
+        console.log("Найденный чат для публикации", itemData.id, ":", existingChat);
+        
+        if (existingChat) {
+          setExistingChatId(existingChat.chat.id);
+          console.log("Чат уже существует, ID:", existingChat.chat.id);
+        } else {
+          setExistingChatId(null);
+          console.log("Чат не найден, можно создать новый");
+        }
+      } catch (error) {
+        console.error("Ошибка при проверке чатов:", error);
+      } finally {
+        setCheckingChats(false);
+      }
+    };
 
-    try {
+    if (currentUser && itemData) {
+      checkExistingChats();
+    }
+  }, [currentUser, itemData]);
+
+  // Функция создания чата (ВЫЗЫВАЕТСЯ ТОЛЬКО ЕСЛИ ЧАТА ЕЩЕ НЕТ)
+  const handleCreateChat = async (offerType: "exchange" | "free", selectedItemId?: number) => {
+    if (!itemData || !currentUser) {
+      message.warning("Необходимо авторизоваться");
       navigate("/login");
+      return;
+    }
+
+    if (currentUser.id === itemData.author_id) {
+      message.warning("Нельзя создать чат с самим собой");
+      return;
+    }
+
+    // Если чат уже существует - переходим в него
+    if (existingChatId) {
+      navigate(`/user-account/messages`, {
+        state: { openChatId: existingChatId }
+      });
+      return;
+    }
+
+    setIsCreatingChat(true);
+    
+    try {
+      console.log("🟡 СОЗДАЕМ НОВЫЙ ЧАТ для публикации", itemData.id);
+      
+      // 1. Создаем чат
+      const chatData = await chatsApi.getChatByPublicationId(
+        itemData.id,
+        itemData.author_username
+      );
+      
+      console.log("✅ Чат создан:", chatData);
+      setExistingChatId(chatData.chat.id);
+      
+      // 2. Добавляем первое сообщение
+      const greetingMessage = offerType === "exchange" 
+        ? "Здравствуйте, хочу поговорить об обмене." 
+        : "Здравствуйте, хочу забрать даром.";
+      
+      console.log("🟡 Добавляем первое сообщение:", greetingMessage);
+      await chatsApi.addMessage(chatData.chat.id, greetingMessage);
+      console.log("✅ Первое сообщение добавлено");
+      
+      // 3. Переходим в чат
+      navigate(`/user-account/messages`, {
+        state: { openChatId: chatData.chat.id }
+      });
+      
+      message.success("Чат создан! Переход к сообщениям...");
+      
     } catch (error: any) {
-      console.error("❌ Ошибка при обновлении избранного:", error);
-      message.error("Не удалось обновить избранное");
+      console.error("❌ Ошибка при создании чата:", error);
+      
+      // Если чат уже существует (статус 200)
+      if (error.response?.status === 200 || error.response?.status === 201) {
+        const chatData = error.response.data;
+        setExistingChatId(chatData.chat.id);
+        navigate(`/user-account/messages`, {
+          state: { openChatId: chatData.chat.id }
+        });
+        message.info("Чат уже существует. Переход к сообщениям...");
+      } else {
+        message.error("Ошибка при создании чата");
+      }
+    } finally {
+      setIsCreatingChat(false);
     }
   };
 
   const handleExchangeClick = () => {
     if (!currentUser) {
-      message.warning("Для предложения обмена необходимо авторизоваться");
+      message.warning("Необходимо авторизоваться");
       navigate("/login");
       return;
     }
-    setShowExchangeModal(true);
-  };
 
-  const handleFreeTakeClick = async () => {
-    if (!currentUser || !itemData) return;
-
-    try {
-      // Здесь должен быть API запрос для отправки предложения "забрать даром"
-      // Пока используем заглушку
-      sendOffer({ type: "free", itemId: itemData.id });
-      setIsOfferSent(true);
-      message.success("Предложение отправлено!");
-    } catch (error) {
-      console.error("Ошибка при отправке предложения:", error);
-      message.error("Не удалось отправить предложение");
-    }
-  };
-
-  // Исправленная функция для клика по имени пользователя
-  const handleUserClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    console.log("🟡 Клик по имени пользователя");
-    console.log("🟡 itemData:", itemData);
-    console.log("🟡 author_id:", itemData?.author_id);
-
-    if (itemData && itemData.author_id) {
-      console.log(
-        `🟡 Переход на профиль пользователя с ID: ${itemData.author_id}`
-      );
-      navigate(`/users/${itemData.author_id}`);
-    } else {
-      console.error("❌ Нет данных для перехода на профиль");
-      message.info("Просмотр профиля временно недоступен");
-    }
-  };
-
-  interface OfferData {
-    type: "exchange" | "free";
-    itemId: number;
-    selectedItemId?: number;
-  }
-
-  const sendOffer = (offerData: OfferData) => {
-    console.log("📤 Отправка предложения:", offerData);
-
-    createChat({
-      itemId: itemData!.id,
-      fromUserId: currentUser?.id,
-      toUserId: itemData!.author_id,
-      offerType: itemData!.price.toLowerCase().includes("бесплатно")
-        ? "free"
-        : "exchange",
-      selectedItemId: offerData.selectedItemId,
-    });
-  };
-
-  const createChat = (chatData: any) => {
-    console.log("💬 Создание чата:", chatData);
-  };
-
-  const handleItemSelect = (itemId: number) => {
-    setSelectedItemId(itemId);
-  };
-
-  const handleConfirmExchange = () => {
-    if (
-      !selectedItemId &&
-      !itemData?.price.toLowerCase().includes("бесплатно")
-    ) {
-      message.warning("Пожалуйста, выберите предмет для обмена");
+    // Если чат уже существует - переходим в него
+    if (existingChatId) {
+      navigate(`/user-account/messages`, {
+        state: { openChatId: existingChatId }
+      });
       return;
     }
 
-    sendOffer({
-      type: "exchange",
-      itemId: itemData!.id,
-      selectedItemId: selectedItemId || undefined,
-    });
+    const isFreeItem = itemData?.price.toLowerCase().includes("бесплатно") || 
+                      itemData?.price.toLowerCase() === "free" ||
+                      itemData?.price === "0";
+    
+    if (isFreeItem) {
+      handleCreateChat("free");
+    } else {
+      setShowExchangeModal(true);
+    }
+  };
 
+  const handleFreeTakeClick = () => {
+    if (!currentUser) {
+      message.warning("Необходимо авторизоваться");
+      navigate("/login");
+      return;
+    }
+
+    // Если чат уже существует - переходим в него
+    if (existingChatId) {
+      navigate(`/user-account/messages`, {
+        state: { openChatId: existingChatId }
+      });
+      return;
+    }
+
+    handleCreateChat("free");
+  };
+
+  const handleGoToChat = () => {
+    if (existingChatId) {
+      navigate(`/user-account/messages`, {
+        state: { openChatId: existingChatId }
+      });
+    }
+  };
+
+  const handleConfirmExchange = () => {
+    if (!selectedItemId) {
+      message.warning("Выберите предмет для обмена");
+      return;
+    }
+    handleCreateChat("exchange", selectedItemId);
     setShowExchangeModal(false);
-    setIsOfferSent(true);
-    message.success("Предложение обмена отправлено!");
   };
 
   if (loading) {
     return (
       <div className="px-[20rem] py-0">
         <div className="w-full text-center py-12">
-          <p>Загрузка...</p>
+          <Spin />
         </div>
       </div>
     );
@@ -261,27 +267,41 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
     );
   }
 
-  const isFreeItem =
-    itemData.price.toLowerCase().includes("бесплатно") ||
-    itemData.price.toLowerCase() === "free" ||
-    itemData.price === "0";
+  const isFreeItem = itemData.price.toLowerCase().includes("бесплатно") ||
+                    itemData.price.toLowerCase() === "free" ||
+                    itemData.price === "0";
 
-  // Отладочная информация
-  console.log("📊 ==== ОТЛАДОЧНАЯ ИНФОРМАЦИЯ ====");
-  console.log("📊 Название товара:", itemData.name);
-  console.log("📊 Author ID для перехода:", itemData.author_id);
-  console.log("📊 Username:", itemData.author_username);
-  console.log("📊 Images array (объекты):", itemData.images);
-  console.log("📊 Всего изображений для галереи:", allImages.length);
-  console.log("📊 Изображения для галереи:", allImages);
+  // Определяем что показывать на кнопке
+  const getButtonContent = () => {
+    if (checkingChats) {
+      return { text: "Проверка...", isExisting: false, disabled: true };
+    }
+
+    if (existingChatId) {
+      return { text: "Перейти в чат", isExisting: true, disabled: false };
+    }
+
+    if (isCreatingChat) {
+      return { text: "Создание чата...", isExisting: false, disabled: true };
+    }
+
+    return {
+      text: isFreeItem ? "Забрать даром" : "Предложить обмен",
+      isExisting: false,
+      disabled: false
+    };
+  };
+
+  const button = getButtonContent();
 
   return (
     <div className="px-[20rem] py-0">
       <div className="w-full">
         <div className="flex gap-[5rem] mb-12">
           <div className="flex-1">
-            {/* Передаем все изображения в галерею */}
-            <Gallery images={allImages} />
+            <Gallery images={itemData.images?.map(img => 
+              img.image.startsWith("http") ? img.image : `http://localhost:8000${img.image}`
+            ) || []} />
           </div>
 
           <div className="flex-1">
@@ -299,14 +319,10 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
               </div>
 
               <button
-                onClick={handleLikeClick}
+                onClick={() => navigate("/login")}
                 className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
               >
-                {isLiked ? (
-                  <HeartFilled className="text-red-500 text-[1.5rem]" />
-                ) : (
-                  <HeartOutlined className="text-gray-600 text-[1.5rem]" />
-                )}
+                <HeartOutlined className="text-gray-600 text-[1.5rem]" />
               </button>
             </div>
 
@@ -314,35 +330,36 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
               <p className="text-[1.25rem] text-gray-900 mb-1">
                 {isFreeItem ? "Отдам даром" : `Обмен на ${itemData.price}`}
               </p>
-              <p
-                className="text-[1.25rem] text-gray-600 hover:cursor-pointer hover:text-blue-600 transition-colors"
-                onClick={handleUserClick}
-                style={{ cursor: "pointer" }}
-              >
+              <p className="text-[1.25rem] text-gray-600">
                 {itemData.author_username}
               </p>
             </div>
 
             <div className="mt-[3rem] mb-4">
-              {isFreeItem ? (
+              {button.isExisting ? (
+                <ButtonFilled
+                  onClick={handleGoToChat}
+                  disabled={button.disabled}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <MessageOutlined className="mr-2" />
+                  {button.text}
+                </ButtonFilled>
+              ) : isFreeItem ? (
                 <ButtonFilled
                   onClick={handleFreeTakeClick}
-                  disabled={isOfferSent}
-                  className={
-                    isOfferSent ? "bg-green-600 hover:bg-green-700" : ""
-                  }
+                  disabled={button.disabled}
+                  className={isCreatingChat ? "bg-blue-400 hover:bg-blue-500" : ""}
                 >
-                  {isOfferSent ? "Предложение отправлено" : "Забрать даром"}
+                  {button.text}
                 </ButtonFilled>
               ) : (
                 <ButtonFilled
                   onClick={handleExchangeClick}
-                  disabled={isOfferSent}
-                  className={
-                    isOfferSent ? "bg-green-600 hover:bg-green-700" : ""
-                  }
+                  disabled={button.disabled}
+                  className={isCreatingChat ? "bg-blue-400 hover:bg-blue-500" : ""}
                 >
-                  {isOfferSent ? "Предложение отправлено" : "Предложить обмен"}
+                  {button.text}
                 </ButtonFilled>
               )}
             </div>
@@ -354,61 +371,6 @@ const ItemPreview: React.FC<ItemPreviewProps> = ({ isFree = false }) => {
           <p className="text-[1.25rem] text-gray-900">{itemData.description}</p>
         </div>
       </div>
-
-      {/* Модальное окно выбора публикации для обмена */}
-      <Modal
-        title="Выберите предмет для обмена"
-        open={showExchangeModal}
-        onCancel={() => setShowExchangeModal(false)}
-        onOk={handleConfirmExchange}
-        okText="Предложить обмен"
-        cancelText="Отмена"
-        width={600}
-      >
-        <div className="py-4">
-          <p className="mb-4 text-gray-600">
-            Выберите один из ваших предметов для обмена на "{itemData.name}"
-          </p>
-
-          <div className="space-y-3 max-h-[300px] overflow-y-auto">
-            {userItems.map((item) => (
-              <div
-                key={item.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                  selectedItemId === item.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:bg-gray-50"
-                }`}
-                onClick={() => handleItemSelect(item.id)}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`w-4 h-4 rounded-full border mr-3 ${
-                      selectedItemId === item.id
-                        ? "border-blue-500 bg-blue-500"
-                        : "border-gray-300"
-                    }`}
-                  ></div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">{item.name}</h4>
-                    {item.exchangeFor && (
-                      <p className="text-sm text-gray-600">
-                        Обмен на: {item.exchangeFor}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {userItems.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              У вас пока нет публикаций для обмена
-            </div>
-          )}
-        </div>
-      </Modal>
     </div>
   );
 };

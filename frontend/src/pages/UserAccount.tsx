@@ -78,26 +78,60 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+useEffect(() => {
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    navigate("/login");
+    return;
+  }
 
-    loadUserData();
-    loadLocations();
+  loadUserData();
+  loadLocations();
 
-    if (location.pathname === "/user-account/messages") {
-      loadChats();
+  // Проверяем, нужно ли открыть конкретный чат
+  const state = location.state as { openChatId?: number };
+  
+  if (location.pathname === "/user-account/messages") {
+    loadChats().then(() => {
+      if (state?.openChatId) {
+        // Находим чат в загруженных чатах
+        const chatToOpen = chats.find(c => c.chat.id === state.openChatId);
+        if (chatToOpen) {
+          setSelectedDialog(chatToOpen);
+          message.info("Чат открыт");
+        } else {
+          // Если чат не найден в списке, загружаем его отдельно
+          // (опционально, можно добавить логику загрузки конкретного чата по ID)
+        }
+        
+        // Очищаем состояние чтобы не открывать снова при обновлении
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    });
+    setActiveTab("messages");
+  } else if (location.pathname === "/user-account/offers") {
+    setActiveTab("offers");
+  } else {
+    loadUserPublications();
+    setActiveTab("ads");
+  }
+}, [location]);
+
+// Добавьте функцию для открытия конкретного чата
+const handleOpenSpecificChat = async (chatId: number) => {
+  try {
+    // Здесь нужно реализовать получение чата по ID
+    // Пока что используем существующий список чатов
+    const chats = await chatsApi.getMyChats();
+    const chat = chats.find(c => c.chat.id === chatId);
+    if (chat) {
+      setSelectedDialog(chat);
       setActiveTab("messages");
-    } else if (location.pathname === "/user-account/offers") {
-      setActiveTab("offers");
-    } else {
-      loadUserPublications();
-      setActiveTab("ads");
     }
-  }, [location]);
+  } catch (error) {
+    console.error("Ошибка при загрузке чата:", error);
+  }
+};
 
   // Функция для получения URL изображения
   const getImageUrl = (path: string | null | undefined): string => {
@@ -435,7 +469,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
             </div>
 
             <div className="w-full space-y-1">
-              <button
+              {/* <button
                 className={`w-full text-left h-10 px-3 py-2 flex items-center justify-between rounded transition-colors ${
                   activeTab === "offers"
                     ? "bg-blue-50 text-blue-600 font-medium"
@@ -450,7 +484,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                 {getPendingOffersCount() > 0 && (
                   <Badge count={getPendingOffersCount()} size="small" />
                 )}
-              </button>
+              </button> */}
 
               <button
                 className={`w-full text-left h-10 px-3 py-2 flex items-center justify-start rounded transition-colors ${
