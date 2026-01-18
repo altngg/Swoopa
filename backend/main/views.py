@@ -63,7 +63,12 @@ def create_publication(request):
 
     additional_images = request.FILES.getlist('additional_images')
     if additional_images:
-        data.setlist('additional_images', additional_images)
+        if 'main_image' not in request.FILES:
+            data['main_image'] = additional_images[0]
+            remaining_images = additional_images[1:] if len(additional_images) > 1 else []
+            data.setlist('additional_images', remaining_images)
+        else:
+            data.setlist('additional_images', additional_images)
     
     serializer = PublicationSerializer(data=data, context={'request': request})
     
@@ -85,7 +90,7 @@ def edit_publication(request, slug):
             status=status.HTTP_404_NOT_FOUND
         )
     
-    if (publication.author_id != request.user.id):
+    if publication.author_id != request.user.id:
         return Response(
             {"error": "You can not edit this publication. Loser."},
             status=status.HTTP_403_FORBIDDEN
@@ -100,8 +105,14 @@ def edit_publication(request, slug):
         
         data = request.data.copy()
         additional_images = request.FILES.getlist('additional_images')
+        
         if additional_images:
-            data.setlist('additional_images', additional_images)
+            if 'main_image' not in request.FILES and not publication.main_image:
+                data['main_image'] = additional_images[0]
+                remaining_images = additional_images[1:] if len(additional_images) > 1 else []
+                data.setlist('additional_images', remaining_images)
+            else:
+                data.setlist('additional_images', additional_images)
         
         serializer = PublicationSerializer(
             publication, 

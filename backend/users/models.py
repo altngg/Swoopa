@@ -41,7 +41,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128)
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True) # FIX ADDING PICTURES THROUGH FORM DATA
+    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

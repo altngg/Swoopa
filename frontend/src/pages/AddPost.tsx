@@ -63,24 +63,27 @@ const AddPost = () => {
     setPhotos(newPhotos);
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     const data = {
       name: title,
       price: exchangeFor,
       description,
       publication_type_slug: postType,
       status: 1, // по хорошему сделать статус по slug/sysname
-      publication_images: photos.map((photo) => photo.name),
+      additional_images: photos,
     };
 
     console.log(isEditMode ? "Редактирование:" : "Публикация:", data);
 
-    if (isEditMode) {
-      publicationsApi.updatePublication(location.state?.adData?.slug, data);
-      alert("Объявление обновлено!");
-    } else {
-      publicationsApi.createPublication(data);
-      alert("Объявление опубликовано!");
+    try {
+      await (isEditMode
+        ? publicationsApi.updatePublication(location.state?.adData?.slug, data)
+        : publicationsApi.createPublication(data));
+
+      alert(`Объявление ${isEditMode ? "обновлено" : "опубликовано"}!`);
+    } catch (error) {
+      console.log(error);
+      alert(`Ошибка при ${isEditMode ? "обновлении" : "создании"} публикации.`);
     }
 
     navigate("/user-account");

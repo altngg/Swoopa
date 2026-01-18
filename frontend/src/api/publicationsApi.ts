@@ -23,8 +23,8 @@ export interface CreatePublicationData {
   description: string;
   publication_type_slug: string;
   status: number;
-  main_image?: string | null; // в целом считаю что это поле можно удалить с бэка, и фронт будет тянуть просто первую фотку из всех
-  publication_images?: string[] | null;
+  main_image?: File; // в целом считаю что это поле можно удалить с бэка, и фронт будет тянуть просто первую фотку из всех
+  publication_images?: File[];
 }
 
 export interface PublicationImage {
@@ -66,8 +66,35 @@ export const publicationsApi = {
     data: CreatePublicationData
   ): Promise<Publication> => {
     console.log("data", data);
+    const formData = new FormData();
 
-    const response = await apiClient.post("/main/publications/create/", data);
+    // возможно можно вынести одну и ту же логику в отдельную функцию
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (key === "additional_images" && Array.isArray(value)) {
+          value.forEach((file) => {
+            if (file instanceof File) {
+              formData.append("additional_images", file);
+            }
+          });
+        } else if (value instanceof File) {
+          formData.append(key, value);
+        } else {
+          formData.append(key, value.toString());
+        }
+      }
+    });
+
+    const response = await apiClient.post(
+      "/main/publications/create/",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
     console.log("response", response);
 
     return response.data;
@@ -77,9 +104,32 @@ export const publicationsApi = {
     slug: string,
     data: Partial<CreatePublicationData>
   ): Promise<Publication> => {
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (key === "additional_images" && Array.isArray(value)) {
+          value.forEach((file) => {
+            if (file instanceof File) {
+              formData.append("additional_images", file);
+            }
+          });
+        } else if (value instanceof File) {
+          formData.append(key, value);
+        } else {
+          formData.append(key, value.toString());
+        }
+      }
+    });
+
     const response = await apiClient.patch(
       `/main/publications/${slug}/edit/`,
-      data
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data;
   },
