@@ -20,7 +20,7 @@ function ListingCard({
 }: ListingCardProps) {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const title = item.author_username;
+  const title = item.name;
   const exchangeItem = item.price;
   const mainImage = `http://localhost:8000${item.main_image}`;
   const isFree = item.price === "0" || !item.price;

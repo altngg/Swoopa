@@ -152,7 +152,6 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
         const isFree =
           publication.price === "0" ||
           publication.price.toLowerCase().includes("бесплатно");
-        console.log(publication);
 
         return {
           ...publication,

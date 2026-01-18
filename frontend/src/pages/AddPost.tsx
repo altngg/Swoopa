@@ -5,6 +5,13 @@ import ServiceButton from "../components/ButtonFilled";
 import InvertedButton from "../components/ButtonOutline";
 import { publicationsApi } from "../api/publicationsApi";
 
+interface ExistingImage {
+  id?: number;
+  url: string;
+  file?: File;
+  isExisting?: boolean;
+}
+
 const AddPost = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -14,6 +21,7 @@ const AddPost = () => {
   const [description, setDescription] = useState("");
   const [exchangeFor, setExchangeFor] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Загружаем данные для редактирования, если они есть
@@ -24,7 +32,30 @@ const AddPost = () => {
       setTitle(adData.title || "");
       setExchangeFor(adData.exchangeItem || "");
       setDescription(adData.description || "");
-      setPostType(adData.type || "service");
+      setPostType(adData.publication_type_name || "service");
+
+      const images: ExistingImage[] = [];
+
+      if (adData.main_image) {
+        images.push({
+          url: `http://localhost:8000${adData.main_image}`,
+          isExisting: true,
+        });
+      }
+
+      if (adData.images && Array.isArray(adData.images)) {
+        adData.images.forEach((image: any) => {
+          if (image.image && image.image !== adData.main_image) {
+            images.push({
+              id: image.id,
+              url: `http://localhost:8000${image.image}`,
+              isExisting: true,
+            });
+          }
+        });
+      }
+
+      setExistingImages(images);
     }
   }, [location.state]);
 
@@ -42,11 +73,15 @@ const AddPost = () => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const newFiles = Array.from(files);
+      const totalFiles =
+        existingImages.length + photos.length + newFiles.length;
 
-      const totalFiles = photos.length + newFiles.length;
       if (totalFiles > 5) {
         alert("Можно загрузить не более 5 фотографий");
-        const filesToAdd = newFiles.slice(0, 5 - photos.length);
+        const filesToAdd = newFiles.slice(
+          0,
+          5 - (existingImages.length + photos.length)
+        );
         setPhotos([...photos, ...filesToAdd]);
       } else {
         setPhotos([...photos, ...newFiles]);
@@ -62,6 +97,12 @@ const AddPost = () => {
     setPhotos(newPhotos);
   };
 
+  const handleRemoveExistingImage = (index: number) => {
+    const newExistingImages = [...existingImages];
+    newExistingImages.splice(index, 1);
+    setExistingImages(newExistingImages);
+  };
+
   const handlePublish = async () => {
     const data = {
       name: title,
@@ -70,6 +111,8 @@ const AddPost = () => {
       publication_type_slug: postType,
       status: 1, // по хорошему сделать статус по slug/sysname
       additional_images: photos,
+      // При редактировании нужно также передать информацию об удаленных изображениях
+      // Это зависит от вашего API
     };
 
     console.log(isEditMode ? "Редактирование:" : "Публикация:", data);
@@ -211,14 +254,34 @@ const AddPost = () => {
             <ServiceButton
               onClick={handleAddPhotoClick}
               className="mb-4"
-              disabled={photos.length >= 5}
+              disabled={existingImages.length + photos.length >= 5}
             >
               Прикрепить файл
             </ServiceButton>
 
             {/* Галерея прикрепленных фото */}
-            {photos.length > 0 && (
+            {(existingImages.length > 0 || photos.length > 0) && (
               <div className="flex flex-wrap gap-2 mt-4">
+                {/* Существующие изображения */}
+                {existingImages.map((image, index) => (
+                  <div key={`existing-${index}`} className="relative">
+                    <img
+                      src={image.url}
+                      alt={`Существующее изображение ${index + 1}`}
+                      className="w-[76px] h-[76px] object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveExistingImage(index)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+                      title="Удалить изображение"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+
+                {/* Новые загруженные фото */}
                 {photos.map((photo, index) => (
                   <div key={index} className="relative">
                     <img
@@ -240,6 +303,10 @@ const AddPost = () => {
                 ))}
               </div>
             )}
+
+            <p className="text-sm text-gray-500 mt-2">
+              Загружено: {existingImages.length + photos.length}/5
+            </p>
           </div>
 
           {/* Кнопка публикации/обновления */}
