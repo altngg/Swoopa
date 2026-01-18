@@ -132,107 +132,254 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
 
   const existingChat = findExistingChatForPublication();
 
-  // Функция создания чата (ВЫЗЫВАЕТСЯ ТОЛЬКО ЕСЛИ ЧАТА ЕЩЕ НЕТ)
-  const handleCreateChat = async (offerType: "exchange" | "free", selectedItemId?: number) => {
-    if (!itemData || !currentUser) {
-      message.warning("Необходимо авторизоваться");
-      navigate("/login");
-      return;
-    }
+const handleCreateChat = async (offerType: "exchange" | "free", selectedItemId?: number) => {
+  console.log("🚀 === НАЧАЛО handleCreateChat ===");
+  console.log("📊 Параметры:", { offerType, selectedItemId });
+  console.log("📦 Данные товара:", itemData);
+  console.log("👤 Текущий пользователь:", currentUser);
 
-    if (currentUser.id === itemData.author_id) {
-      message.warning("Нельзя создать чат с самим собой");
-      return;
-    }
+  if (!itemData || !currentUser) {
+    console.log("❌ Нет данных товара или пользователя");
+    message.warning("Необходимо авторизоваться");
+    navigate("/login");
+    return;
+  }
 
-    // Если чат уже существует - переходим в него
-    if (existingChat) {
-      navigate(`/user-account/messages/${existingChat.chat.id}`);
-      return;
-    }
+  if (currentUser.id === itemData.author_id) {
+    console.log("❌ Пользователь пытается создать чат с самим собой");
+    message.warning("Нельзя создать чат с самим собой");
+    return;
+  }
 
-    setIsCreatingChat(true);
+  setIsCreatingChat(true);
+  
+  try {
+    let chatData;
     
+    // Сначала пытаемся получить существующий чат
     try {
-      console.log("🟡 СОЗДАЕМ НОВЫЙ ЧАТ для публикации", itemData.id);
-      
-      // 1. Создаем чат
-      const chatData = await chatsApi.getChatByPublicationId(
+      console.log("🟡 ШАГ 1: Пробуем получить существующий чат");
+      chatData = await chatsApi.getChatByPublicationId(
         itemData.id,
         itemData.author_username
       );
-      
-      console.log("✅ Чат создан:", chatData);
-      
-      // 2. Добавляем первое сообщение
-      const greetingMessage = offerType === "exchange" 
-        ? "Здравствуйте, хочу поговорить об обмене." 
-        : "Здравствуйте, хочу забрать даром.";
-      
-      console.log("🟡 Добавляем первое сообщение:", greetingMessage);
-      await chatsApi.addMessage(chatData.chat.id, greetingMessage);
-      console.log("✅ Первое сообщение добавлено");
-      
-      // 3. Переходим в чат с ID в URL
-      navigate(`/user-account/messages/${chatData.chat.id}`);
-      
-      message.success("Чат создан! Переход к сообщениям...");
-      
-    } catch (error: any) {
-      console.error("❌ Ошибка при создании чата:", error);
-      
-      // Если чат уже существует (статус 200)
-      if (error.response?.status === 200 || error.response?.status === 201) {
-        const chatData = error.response.data;
-        navigate(`/user-account/messages/${chatData.chat.id}`);
-        message.info("Чат уже существует. Переход к сообщениям...");
+      console.log("✅ Существующий чат найден, ID:", chatData.chat.id);
+    } catch (getError: any) {
+      // Если чат не найден (404), создаем новый
+      if (getError.response?.status === 404) {
+        console.log("🟡 Чат не найден, создаем новый...");
+        chatData = await chatsApi.createChat(
+          itemData.id,
+          itemData.author_username
+        );
+        console.log("✅ Новый чат создан, ID:", chatData.chat.id);
       } else {
-        message.error("Ошибка при создании чата");
+        // Другие ошибки
+        throw getError;
       }
-    } finally {
-      setIsCreatingChat(false);
     }
-  };
-
-  const handleExchangeClick = () => {
-    if (!currentUser) {
-      message.warning("Необходимо авторизоваться");
-      navigate("/login");
-      return;
-    }
-
-    // Если чат уже существует - переходим в него
-    if (existingChat) {
-      navigate(`/user-account/messages/${existingChat.chat.id}`);
-      return;
-    }
-
-    const isFreeItem = itemData?.price.toLowerCase().includes("бесплатно") || 
-                      itemData?.price.toLowerCase() === "free" ||
-                      itemData?.price === "0";
     
-    if (isFreeItem) {
-      handleCreateChat("free");
-    } else {
-      setShowExchangeModal(true);
-    }
-  };
-
-  const handleFreeTakeClick = () => {
-    if (!currentUser) {
-      message.warning("Необходимо авторизоваться");
+    // Добавляем первое сообщение
+    const greetingMessage = offerType === "exchange" 
+      ? selectedItemId 
+        ? `Здравствуйте, предлагаю обмен на мой товар (ID: ${selectedItemId}).`
+        : "Здравствуйте, хочу поговорить об обмене." 
+      : "Здравствуйте, хочу забрать даром.";
+    
+    console.log("🟡 ШАГ 2: Добавляем первое сообщение:", greetingMessage);
+    await chatsApi.addMessage(chatData.chat.id, greetingMessage);
+    console.log("✅ Первое сообщение добавлено");
+    
+    // Обновляем список чатов
+    console.log("🟡 ШАГ 3: Обновляем список чатов");
+    const updatedChats = await chatsApi.getMyChats();
+    setExistingChats(updatedChats);
+    console.log("✅ Список чатов обновлен, количество:", updatedChats.length);
+    
+    // Переходим в чат
+    console.log("🟡 ШАГ 4: Переходим в чат");
+    const chatUrl = `/user-account/messages/${chatData.chat.id}`;
+    console.log("🔗 URL для перехода:", chatUrl);
+    navigate(chatUrl);
+    
+    message.success("Чат создан! Переход к сообщениям...");
+    
+  } catch (error: any) {
+    console.error("❌ Ошибка при создании чата:", error);
+    console.error("Детали ошибки:", {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+      stack: error.stack
+    });
+    
+    // Обработка различных ошибок
+    if (error.response?.status === 400) {
+      message.error("Ошибка при создании чата: " + (error.response.data.detail || "Неизвестная ошибка"));
+    } else if (error.response?.status === 401) {
+      message.warning("Сессия истекла, требуется повторная авторизация");
       navigate("/login");
+    } else if (error.response?.status === 403) {
+      message.error("У вас нет прав для создания чата");
+    } else {
+      message.error("Неизвестная ошибка при создании чата");
+    }
+  } finally {
+    setIsCreatingChat(false);
+  }
+};
+
+const handleExchangeClick = async () => {
+  console.log("🟡 === handleExchangeClick ВЫЗВАН ===");
+  
+  if (!currentUser) {
+    console.log("❌ Нет пользователя, редирект на логин");
+    message.warning("Необходимо авторизоваться");
+    navigate("/login");
+    return;
+  }
+
+  if (!itemData) {
+    console.log("❌ Нет данных товара");
+    return;
+  }
+
+  console.log("📦 Товар:", itemData.name, "ID:", itemData.id);
+  console.log("👤 Пользователь:", currentUser.username, "ID:", currentUser.id);
+  console.log("👤 Автор товара ID:", itemData.author_id);
+
+  // Если пользователь кликает на свой же товар
+  if (currentUser.id === itemData.author_id) {
+    console.log("❌ Пользователь пытается создать чат со своим товаром");
+    message.warning("Нельзя создать чат для своего же товара");
+    return;
+  }
+
+  try {
+    setCheckingChats(true);
+    
+    // 1. Проверяем существующие чаты
+    console.log("🟡 Проверяем существующие чаты...");
+    const allChats = await chatsApi.getMyChats();
+    console.log("✅ Чатов найдено:", allChats.length);
+    
+    // Ищем чат с этой публикацией
+    const existingChat = allChats.find(
+      (chat: any) => {
+        const match = chat.chat.publication.id === itemData.id;
+        console.log("📝 Сравниваем:", {
+          chatPubId: chat.chat.publication.id,
+          itemId: itemData.id,
+          match: match
+        });
+        return match;
+      }
+    );
+    
+    if (existingChat) {
+      console.log("✅ Чат уже существует! ID:", existingChat.chat.id);
+      console.log("🔗 Переходим в чат...");
+      navigate(`/user-account/messages/${existingChat.chat.id}`);
       return;
     }
+    
+    console.log("❌ Чат не найден, создаем новый...");
+    
+    // 2. Создаем чат
+    console.log("🟡 Создаем чат...");
+    const chatData = await chatsApi.getChatByPublicationId(
+      itemData.id,
+      itemData.author_username
+    );
+    
+    console.log("✅ Чат создан/получен:", chatData);
+    console.log("🆔 ID чата:", chatData.chat.id);
+    
+    // 3. Добавляем первое сообщение
+    const greetingMessage = "Здравствуйте, хочу поговорить об обмене.";
+    console.log("🟡 Добавляем первое сообщение:", greetingMessage);
+    await chatsApi.addMessage(chatData.chat.id, greetingMessage);
+    
+    // 4. Переходим в чат
+    console.log("🔗 Переходим в чат:", chatData.chat.id);
+    navigate(`/user-account/messages/${chatData.chat.id}`);
+    
+    message.success("Чат создан!");
+    
+  } catch (error: any) {
+    console.error("❌ Ошибка:", error);
+    console.error("Детали:", {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    
+    if (error.response?.status === 400) {
+      message.error("Ошибка: " + (error.response.data.detail || "неизвестная ошибка"));
+    } else if (error.response?.status === 404) {
+      message.error("Не удалось найти или создать чат");
+    } else {
+      message.error("Неизвестная ошибка");
+    }
+  } finally {
+    setCheckingChats(false);
+  }
+};
 
-    // Если чат уже существует - переходим в него
+const handleFreeTakeClick = async () => {
+  console.log("🟡 === handleFreeTakeClick ВЫЗВАН ===");
+  
+  if (!currentUser) {
+    message.warning("Необходимо авторизоваться");
+    navigate("/login");
+    return;
+  }
+
+  if (!itemData) return;
+
+  if (currentUser.id === itemData.author_id) {
+    message.warning("Нельзя создать чат для своего же товара");
+    return;
+  }
+
+  try {
+    setCheckingChats(true);
+    
+    // 1. Проверяем существующие чаты
+    const allChats = await chatsApi.getMyChats();
+    const existingChat = allChats.find(
+      (chat: any) => chat.chat.publication.id === itemData.id
+    );
+    
     if (existingChat) {
       navigate(`/user-account/messages/${existingChat.chat.id}`);
       return;
     }
+    
+    // 2. Создаем чат
+    const chatData = await chatsApi.getChatByPublicationId(
+      itemData.id,
+      itemData.author_username
+    );
+    
+    // 3. Добавляем первое сообщение
+    const greetingMessage = "Здравствуйте, хочу забрать даром.";
+    await chatsApi.addMessage(chatData.chat.id, greetingMessage);
+    
+    // 4. Переходим в чат
+    navigate(`/user-account/messages/${chatData.chat.id}`);
+    
+    message.success("Чат создан!");
+    
+  } catch (error: any) {
+    console.error("❌ Ошибка:", error);
+    message.error("Не удалось создать чат");
+  } finally {
+    setCheckingChats(false);
+  }
+};
 
-    handleCreateChat("free");
-  };
+  
 
   const handleGoToChat = () => {
     if (existingChat) {
@@ -275,16 +422,16 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
 
   // Определяем что показывать на кнопке
   const getButtonContent = () => {
-    if (checkingChats) {
-      return { text: "Проверка...", isExisting: false, disabled: true };
+    if (checkingChats || isCreatingChat) {
+      return { 
+        text: checkingChats ? "Проверка..." : "Создание чата...", 
+        isExisting: false, 
+        disabled: true 
+      };
     }
 
     if (existingChat) {
       return { text: "Перейти в чат", isExisting: true, disabled: false };
-    }
-
-    if (isCreatingChat) {
-      return { text: "Создание чата...", isExisting: false, disabled: true };
     }
 
     return {

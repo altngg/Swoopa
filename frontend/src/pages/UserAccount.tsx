@@ -113,7 +113,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     }
   }, [location, urlChatId]);
 
-  // Функция для открытия чата по ID из URL
+  // Функция для открытия чата по ID из URL - ТЕПЕРЬ ЗАГРУЖАЕТ ВСЕ СООБЩЕНИЯ
   const openChatById = async (chatId: number, loadedChats: Chat[]) => {
     console.log("🟡 Открываем чат из URL, ID:", chatId);
     
@@ -121,15 +121,34 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     let chatToOpen = loadedChats.find(c => c.chat.id === chatId);
     
     if (chatToOpen) {
-      console.log("✅ Чат найден в списке");
-      setSelectedDialog(chatToOpen);
+      console.log("✅ Чат найден в списке, но может быть неполным");
+      
+      // ЗАГРУЖАЕМ ПОЛНЫЕ ДАННЫЕ ЧАТА С ВСЕМИ СООБЩЕНИЯМИ
+      try {
+        console.log("🟡 Загружаем полную историю сообщений...");
+        const fullChat = await chatsApi.getChatByPublicationId(
+          chatToOpen.chat.publication.id,
+          chatToOpen.chat.author_username
+        );
+        console.log("✅ Полная история загружена, сообщений:", fullChat.messages.length);
+        
+        setSelectedDialog(fullChat);
+        
+        // Обновляем чат в списке с полными данными
+        setChats(prev => prev.map(chat => 
+          chat.chat.id === fullChat.chat.id ? fullChat : chat
+        ));
+      } catch (error) {
+        console.error("❌ Ошибка при загрузке полной истории:", error);
+        // Если не удалось загрузить полные данные, используем что есть
+        setSelectedDialog(chatToOpen);
+      }
       return;
     }
     
-    // 2. Если не нашли, пробуем загрузить чат по publication_id
+    // 2. Если не нашли в списке, пробуем найти информацию в localStorage
     console.log("🟡 Чат не найден в списке, ищем информацию...");
     
-    // Пробуем найти информацию о чате в localStorage
     const chatInfo = localStorage.getItem(`chat_info_${chatId}`);
     if (chatInfo) {
       try {
@@ -142,7 +161,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
         );
         
         if (directChat.chat.id === chatId) {
-          console.log("✅ Чат загружен напрямую");
+          console.log("✅ Чат загружен напрямую с полной историей");
           setSelectedDialog(directChat);
           
           // Добавляем в список чатов, если его там нет
@@ -336,12 +355,17 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
       timestamp: new Date().toISOString()
     }));
     
-    // Загружаем полные данные чата
+    // Загружаем полные данные чата с ВСЕМИ сообщениями
     const fullChat = await chatsApi.getChatByPublicationId(
       chat.chat.publication.id,
       chat.chat.author_username
     );
     setSelectedDialog(fullChat);
+    
+    // Обновляем чат в списке с полными данными
+    setChats(prev => prev.map(c => 
+      c.chat.id === fullChat.chat.id ? fullChat : c
+    ));
   };
 
   const handleRemoveAd = async (itemId: number) => {
@@ -698,7 +722,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
           )}
 
           {activeTab === "messages" && (
-            <div className="flex gap-6">
+            <div className="flex gap-6 h-[calc(100vh-180px)] min-h-[700px]">
               <div className="w-96">
                 <DialoguesList
                   dialogs={chats}
@@ -713,7 +737,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                 )}
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 flex flex-col min-h-[600px]">
                 {selectedDialog ? (
                   <DialogueWindow
                     key={selectedDialog.chat.id}
@@ -722,7 +746,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                     selectedChat={selectedDialog}
                   />
                 ) : (
-                  <div className="h-[calc(100vh-200px)] flex items-center justify-center bg-white rounded-lg border border-gray-200">
+                  <div className="h-full flex items-center justify-center bg-white rounded-lg border border-gray-200 min-h-[600px]">
                     <div className="text-center text-gray-500">
                       <p className="text-lg mb-2">Выберите диалог</p>
                       <p className="text-sm">или начните новый разговор</p>
