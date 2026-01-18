@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Avatar, Button } from "antd";
 import { UserOutlined, CloseOutlined } from "@ant-design/icons";
 import DirectMessage from "./DirectMessage";
@@ -27,6 +27,44 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
     userName === publicationAuthor ? chatAuthor : publicationAuthor;
 
   const [messages, setMessages] = useState(selectedChat.messages);
+  const socketRef = useRef<WebSocket | null>(null); 
+
+  useEffect(() => {
+    console.log('Trying to connect WebSocket for chat:', selectedChat.chat.id);
+    const chatId = selectedChat.chat.id;
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const socket = new WebSocket(`${wsProtocol}://${window.location.host}/ws/chat/${chatId}/`);
+
+    socket.onopen = () => {
+      console.log('WebSocket connected for chat', chatId);
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setMessages(prev => [...prev, {
+        id: Date.now(), // временный ID, переделать в получение из API(?)
+        author_username: data.sender_username,
+        text: data.message,
+        created_at: data.timestamp
+      }]);
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    socketRef.current = socket;
+
+    return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [selectedChat.chat.id]);
 
   const handleSendMessage = async (text: string) => {
     const newMessage = await chatsApi.addMessage(selectedChat.chat.id, text);
