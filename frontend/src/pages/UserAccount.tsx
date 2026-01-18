@@ -156,26 +156,29 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
 
   const loadUserPublications = async () => {
     try {
-      const publications = await publicationsApi.getAll();
-      const currentUser = await authApi.getCurrentUser();
+      const publications = await publicationsApi.getUserPublications();
 
-      const userPublications = publications
-        .filter((pub) => pub.author_id === currentUser.id)
-        .map((pub) => ({
-          itemId: pub.id,
-          title: pub.name,
-          exchangeItem:
-            pub.price === "0" || pub.price.toLowerCase().includes("бесплатно")
-              ? "Бесплатно"
-              : pub.price,
-          userName: pub.author_username,
-          isFree:
-            pub.price === "0" || pub.price.toLowerCase().includes("бесплатно"),
-          slug: pub.slug,
-          mainImage: pub.main_image ? getImageUrl(pub.main_image) : null,
-        }));
+      const formattedPublications = publications.map((publication) => {
+        const isFree =
+          publication.price === "0" ||
+          publication.price.toLowerCase().includes("бесплатно");
+        console.log(publication);
 
-      setUserAds(userPublications);
+        return {
+          ...publication,
+          itemId: publication.id,
+          title: publication.name,
+          exchangeItem: isFree ? "Бесплатно" : publication.price,
+          userName: publication.author_username,
+          isFree,
+          slug: publication.slug,
+          mainImage: publication.main_image
+            ? getImageUrl(publication.main_image)
+            : null,
+        };
+      });
+
+      setUserAds(formattedPublications);
     } catch (error) {
       console.error("Ошибка при загрузке публикаций:", error);
       message.error("Не удалось загрузить ваши объявления");

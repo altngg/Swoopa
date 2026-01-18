@@ -23,9 +23,8 @@ const AddPost = () => {
       const adData = location.state.adData;
       setTitle(adData.title || "");
       setExchangeFor(adData.exchangeItem || "");
-      // Здесь можно загрузить дополнительные данные, если они есть
-      // setDescription(adData.description || '');
-      // setPostType(adData.type || 'service');
+      setDescription(adData.description || "");
+      setPostType(adData.type || "service");
     }
   }, [location.state]);
 

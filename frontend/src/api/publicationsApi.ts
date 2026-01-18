@@ -57,6 +57,11 @@ export const publicationsApi = {
     return response.data;
   },
 
+  getUserPublications: async (): Promise<Publication[]> => {
+    const response = await apiClient.get("/main/publications/my/");
+    return response.data;
+  },
+
   getPublicationBySlug: async (slug: string): Promise<Publication> => {
     const response = await apiClient.get(`/main/publications/${slug}`);
     return response.data;
