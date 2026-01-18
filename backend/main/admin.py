@@ -10,7 +10,7 @@ class PublicationImageInline(admin.TabularInline):
 
 class PublicationAdmin(admin.ModelAdmin):
     list_display = ['name', 'price', 'description', 'publication_type', 'status']
-    list_filter = ['publication_type', 'location', 'price']
+    list_filter = ['publication_type', 'price']
     # сортировка по цене осущ. по заполеннности этого поля вообще
     search_fields = ['name', 'description']
     prepopulated_fields = {'slug': ('name',)}
