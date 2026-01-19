@@ -81,7 +81,7 @@ export const publicationsApi = {
           });
         } else if (value instanceof File) {
           formData.append(key, value);
-        } else {
+        } else if (key !== "images_to_delete_ids") {
           formData.append(key, value.toString());
         }
       }
