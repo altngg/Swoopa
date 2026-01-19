@@ -56,7 +56,7 @@ def get_my_publications(request):
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def create_publication(request):
-    data = request.data.copy()
+    data = request.data
     
     if 'author' in data:
         data.pop('author')
@@ -97,8 +97,8 @@ def edit_publication(request, slug):
     
     elif request.method in ['PUT', 'PATCH']:
         partial = request.method == 'PATCH'
-        
-        data = request.data.copy()
+
+        data = request.data
 
         additional_images = request.FILES.getlist('additional_images')        
         if additional_images:

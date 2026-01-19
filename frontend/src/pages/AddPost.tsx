@@ -21,9 +21,7 @@ const AddPost = () => {
 
   const [photos, setPhotos] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
-  const [imagesToDelete, setImagesToDelete] = useState<ExistingImage[] | null>(
-    null
-  );
+  const [imagesToDelete, setImagesToDelete] = useState<ExistingImage[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -116,7 +114,7 @@ const AddPost = () => {
 
     console.log(isEditMode ? "Редактирование:" : "Публикация:", data);
 
-    if (imagesToDelete) {
+    if (imagesToDelete.length > 0) {
       // needs to be fixed, but done so because shouldn't send empty array to backend
       data.images_to_delete_ids = imagesToDelete.map((item) => item.id);
     }

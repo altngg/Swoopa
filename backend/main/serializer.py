@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Publication, PublicationImage, PublicationType
-from django.utils.text import slugify
 
 class PublicationImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,9 +44,6 @@ class PublicationSerializer(serializers.ModelSerializer):
         publication_type_slug = validated_data.pop('publication_type_slug', None)
         additional_images = validated_data.pop('additional_images', [])
         
-        if 'name' in validated_data:
-            validated_data['slug'] = slugify(validated_data['name'], allow_unicode=True)
-        
         if publication_type_slug:
             try:
                 publication_type = PublicationType.objects.get(slug=publication_type_slug)
@@ -74,9 +70,6 @@ class PublicationSerializer(serializers.ModelSerializer):
                 id__in=images_to_delete_ids,
                 publication=instance
             ).delete()
-        
-        if 'name' in validated_data:
-            validated_data['slug'] = slugify(validated_data['name'], allow_unicode=True)
         
         if publication_type_slug:
             try:

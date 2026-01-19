@@ -5,11 +5,17 @@ from users.models import User
 
 class PublicationType(models.Model):
     name = models.CharField(max_length=10)
-    slug = models.CharField(max_length=10, unique=True)
+    slug = models.SlugField(max_length=10, unique=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name, allow_unicode=True)
+            base_slug = slugify(self.name, allow_unicode=True)
+            slug = base_slug
+            counter = 1
+            while Publication.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -25,7 +31,7 @@ class Status(models.Model):
 
 class Publication(models.Model):
     name = models.CharField()
-    slug = models.CharField(unique=True)
+    slug = models.SlugField(unique=True)
     price = models.CharField(blank=True)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -37,7 +43,13 @@ class Publication(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name, allow_unicode=True)
+            base_slug = slugify(self.name, allow_unicode=True)
+            slug = base_slug
+            counter = 1
+            while Publication.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
     def __str__(self):
