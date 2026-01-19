@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import ItemCard from "../components/ItemCard";
+import ItemCard from "../Сomponents/ItemCard";
 import SortDropdown from "../components/SortDropdown";
 import { useLocation } from "react-router-dom";
 import { publicationsApi, type Publication } from "../api/publicationsApi";
@@ -78,10 +78,10 @@ const Feed = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="mt-[2rem] mx-[3rem] min-h-screen">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="font-inter font-semibold text-2xl text-gray-900">
+    <div className="p-4 sm:p-6">
+      <div className="mt-4 sm:mt-[2rem] mx-0 sm:mx-2 md:mx-4 lg:mx-[3rem] min-h-screen">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4 sm:gap-0">
+          <h1 className="font-inter font-semibold text-xl sm:text-2xl text-gray-900">
             {isSearchActive && searchQuery ? "Результаты поиска" : "Для Вас"}
           </h1>
 
@@ -92,7 +92,7 @@ const Feed = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-12">
+          <div className="flex justify-center py-8 sm:py-12">
             <Spin size="large" />
           </div>
         ) : (
@@ -102,10 +102,12 @@ const Feed = () => {
               grid 
               grid-cols-1 
               xs:grid-cols-2 
-              sm:grid-cols-3 
-              md:grid-cols-4 
-              lg:grid-cols-5 
-              xl:grid-cols-6
+              sm:grid-cols-2 
+              md:grid-cols-3 
+              lg:grid-cols-4 
+              xl:grid-cols-5
+              2xl:grid-cols-6
+              gap-4 sm:gap-6
               overflow-y-auto
             "
             >
@@ -149,7 +151,7 @@ const Feed = () => {
             {isSearchActive &&
               searchQuery &&
               filteredAndSortedPublications.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
                   По запросу "{searchQuery}" ничего не найдено
                 </div>
               )}

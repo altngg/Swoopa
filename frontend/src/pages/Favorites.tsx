@@ -68,13 +68,13 @@ const Favorites = () => {
   };
 
   return (
-    <div className="min-h-screen px-[11rem] py-0">
-      <h1 className="font-inter font-semibold text-2xl mb-8 text-gray-900">
+    <div className="min-h-screen px-4 sm:px-6 md:px-8 lg:px-20 xl:px-[11rem] py-0">
+      <h1 className="font-inter font-semibold text-xl sm:text-2xl mb-6 sm:mb-8 text-gray-900">
         Понравившееся
       </h1>
 
-      <div className="flex gap-1">
-        <div className="w-2/3 space-y-4">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-1">
+        <div className="w-full lg:w-2/3 space-y-4">
           {favoriteItems.map((item) => (
             <ListingCard
               item={item}
@@ -85,9 +85,11 @@ const Favorites = () => {
           ))}
         </div>
 
-        <div className="w-1/3">
+        <div className="w-full lg:w-1/3">
           {selectedChat && (
-            <div className="fixed bottom-0 right-[9rem] h-[calc(80%)] w-[calc(33.333%-2rem)]">
+            <div className="lg:fixed lg:bottom-0 lg:right-4 md:right-6 lg:right-8 xl:right-[9rem] 
+              lg:h-[calc(80%)] w-full lg:w-[calc(33.333%-1rem)] xl:w-[calc(33.333%-2rem)] 
+              mt-4 lg:mt-0">
               <DialogueWindow
                 onClose={() => {
                   setSelectedChat(null);
