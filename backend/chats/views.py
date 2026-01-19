@@ -140,15 +140,15 @@ def add_message(request):
         )
 
 
-    is_first_message = not chat.message_set.exists()
+    # is_first_message = not chat.message_set.exists()
 
-    if (is_first_message):
-        offer_status = OfferStatus.objects.get(id=1)
-        Offer.objects.create(
-            publication = chat.publication,
-            chat = chat,
-            status = offer_status
-        )
+    # if (is_first_message):
+    #     offer_status = OfferStatus.objects.get(id=1)
+    #     Offer.objects.create(
+    #         publication = chat.publication,
+    #         chat = chat,
+    #         status = offer_status
+    #     )
 
     message = Message.objects.create(
         chat=chat,

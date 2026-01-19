@@ -28,6 +28,18 @@ export interface Chat {
 }
 
 export const chatsApi = {
+
+  // Создание нового чата
+  createChat: async (
+    publicationId: number,
+    author_username: string
+  ): Promise<Chat> => {
+    const response = await apiClient.post("/chats/create/", {
+      publication_id: publicationId,
+      author_username: author_username
+    });
+    return response.data;
+  },
   // add message + create offer
   addMessage: async (chat_id: number, text: string): Promise<Message> => {
     const response = await apiClient.post("/chats/add-message/", {
@@ -42,14 +54,20 @@ export const chatsApi = {
     return response.data;
   },
 
+
   getChatByPublicationId: async (
     publicationId: number,
     author_username: string
-  ): Promise<Chat> => {
+  ): Promise<Chat & { isNew?: boolean }> => {
     const response = await apiClient.get(
       `/chats/${author_username}/${publicationId}/`
     );
-    return response.data;
+    
+    // Добавляем флаг isNew на основе статуса ответа
+    const chatData = response.data;
+    chatData.isNew = response.status === 201; // 201 = Created, 200 = OK
+    
+    return chatData;
   },
 
   // Can get chat by offer id too, but not here probably
