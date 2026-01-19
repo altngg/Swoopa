@@ -116,6 +116,10 @@ export const publicationsApi = {
               formData.append("additional_images", file);
             }
           });
+        } else if (key === "images_to_delete_ids" && Array.isArray(value)) {
+          value.forEach((id) => {
+            formData.append("images_to_delete_ids", id);
+          });
         } else if (value instanceof File) {
           formData.append(key, value);
         } else {

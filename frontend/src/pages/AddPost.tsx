@@ -110,14 +110,10 @@ const AddPost = () => {
       publication_type_slug: postType,
       status: 1, // по хорошему сделать статус по slug/sysname
       additional_images: photos,
+      images_to_delete_ids: imagesToDelete.map((item) => item.id),
     };
 
     console.log(isEditMode ? "Редактирование:" : "Публикация:", data);
-
-    if (imagesToDelete.length > 0) {
-      // needs to be fixed, but done so because shouldn't send empty array to backend
-      data.images_to_delete_ids = imagesToDelete.map((item) => item.id);
-    }
 
     try {
       await (isEditMode
