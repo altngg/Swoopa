@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import AuthForm from "../components/AuthForm";
+import AuthForm from "../Components/AuthForm";
 import Navbar from "../components/Navbar";
 
 const LoginPage: React.FC = () => {
@@ -56,14 +56,14 @@ const LoginPage: React.FC = () => {
             {}
           </div>
 
-          {/* Правая часть с формой */}
+          {}
           <div className="flex-1 bg-white p-6 sm:p-8 md:p-10 lg:p-12 rounded-t-2xl lg:rounded-r-2xl lg:rounded-tl-none shadow-lg order-1 lg:order-2">
             <div className="mb-4 lg:mb-6">
               
             </div>
             <AuthForm initialMode={initialMode} />
             
-            {/* Единый блок для переключения режима - показывается ВСЕГДА */}
+            {}
             
           </div>
         </div>

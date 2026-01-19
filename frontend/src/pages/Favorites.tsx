@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import ListingCard from "../components/ListingCard";
-import DialogueWindow from "../components/DialogueWindow";
+import ListingCard from "../Components/ListingCard";
+import DialogueWindow from "../Components/DialogueWindow";
 import { useNavigate } from "react-router-dom";
 import { favoritesApi } from "../api/favoritesApi";
 import { chatsApi, type Chat } from "../api/chatsApi";

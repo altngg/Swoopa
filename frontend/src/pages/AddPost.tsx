@@ -2,13 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { LeftOutlined } from "@ant-design/icons";
 import ServiceButton from "../components/ButtonFilled";
-import InvertedButton from "../components/ButtonOutline";
+import InvertedButton from "../Components/ButtonOutline";
 import { publicationsApi } from "../api/publicationsApi";
-
-interface ExistingImage {
-  id: number;
-  image: string;
-}
 
 const AddPost = () => {
   const navigate = useNavigate();
@@ -18,11 +13,7 @@ const AddPost = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [exchangeFor, setExchangeFor] = useState("");
-
   const [photos, setPhotos] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
-  const [imagesToDelete, setImagesToDelete] = useState<ExistingImage[]>([]);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Загружаем данные для редактирования, если они есть
@@ -32,23 +23,9 @@ const AddPost = () => {
       const adData = location.state.adData;
       setTitle(adData.title || "");
       setExchangeFor(adData.exchangeItem || "");
-      setDescription(adData.description || "");
-      setPostType(adData.publication_type_name || "service");
-
-      const images: ExistingImage[] = [];
-
-      if (adData.images) {
-        adData.images.forEach((image: any) => {
-          if (image.image) {
-            images.push({
-              id: image.id,
-              image: `http://localhost:8000${image.image}`,
-            });
-          }
-        });
-      }
-
-      setExistingImages(images);
+      // Здесь можно загрузить дополнительные данные, если они есть
+      // setDescription(adData.description || '');
+      // setPostType(adData.type || 'service');
     }
   }, [location.state]);
 
@@ -66,15 +43,11 @@ const AddPost = () => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const newFiles = Array.from(files);
-      const totalFiles =
-        existingImages.length + photos.length + newFiles.length;
 
+      const totalFiles = photos.length + newFiles.length;
       if (totalFiles > 5) {
         alert("Можно загрузить не более 5 фотографий");
-        const filesToAdd = newFiles.slice(
-          0,
-          5 - (existingImages.length + photos.length)
-        );
+        const filesToAdd = newFiles.slice(0, 5 - photos.length);
         setPhotos([...photos, ...filesToAdd]);
       } else {
         setPhotos([...photos, ...newFiles]);
@@ -90,40 +63,24 @@ const AddPost = () => {
     setPhotos(newPhotos);
   };
 
-  const handleRemoveExistingImage = (index: number) => {
-    const imageToRemove = existingImages[index];
-
-    if (imageToRemove.id) {
-      setImagesToDelete((prev) => [...prev, imageToRemove]);
-    }
-
-    const newExistingImages = [...existingImages];
-    newExistingImages.splice(index, 1);
-    setExistingImages(newExistingImages);
-  };
-
-  const handlePublish = async () => {
+  const handlePublish = () => {
     const data = {
       name: title,
       price: exchangeFor,
       description,
       publication_type_slug: postType,
       status: 1, // по хорошему сделать статус по slug/sysname
-      additional_images: photos,
-      images_to_delete_ids: imagesToDelete.map((item) => item.id),
+      publication_images: photos.map((photo) => photo.name),
     };
 
     console.log(isEditMode ? "Редактирование:" : "Публикация:", data);
 
-    try {
-      await (isEditMode
-        ? publicationsApi.updatePublication(location.state?.adData?.slug, data)
-        : publicationsApi.createPublication(data));
-
-      alert(`Объявление ${isEditMode ? "обновлено" : "опубликовано"}!`);
-    } catch (error) {
-      console.log(error);
-      alert(`Ошибка при ${isEditMode ? "обновлении" : "создании"} публикации.`);
+    if (isEditMode) {
+      publicationsApi.updatePublication("godheavens", data); // ВОТ ТУТ СЛАГ
+      alert("Объявление обновлено!");
+    } else {
+      publicationsApi.createPublication(data);
+      alert("Объявление опубликовано!");
     }
 
     navigate("/user-account");
@@ -136,56 +93,63 @@ const AddPost = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Заголовок с кнопкой возврата */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-6 md:mb-8">
         <button
           onClick={handleGoBack}
-          className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors"
+          className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
         >
           <LeftOutlined className="text-lg" />
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
           {isEditMode ? "Редактировать публикацию" : "Новая публикация"}
         </h1>
       </div>
 
       {/* Основной контейнер */}
-      <div className="ml-11">
+      <div className="ml-0 sm:ml-8 md:ml-11">
         {/* Переключение Услуга/Товар */}
-        <div className="flex gap-4 mb-8">
+        <div className="flex flex-wrap gap-2 sm:gap-4 mb-6 md:mb-8">
           {postType === "service" ? (
-            <ServiceButton onClick={() => setPostType("service")}>
+            <ServiceButton 
+              onClick={() => setPostType("service")}
+              className="w-full sm:w-auto"
+            >
               Услуга
             </ServiceButton>
           ) : (
             <InvertedButton
               text="Услуга"
               onClick={() => setPostType("service")}
-              className="text-gray-700"
+              className="w-full sm:w-auto text-gray-700"
             />
           )}
 
           {postType === "product" ? (
-            <ServiceButton onClick={() => setPostType("product")}>
+            <ServiceButton 
+              onClick={() => setPostType("product")}
+              className="w-full sm:w-auto"
+            >
               Товар
             </ServiceButton>
           ) : (
             <InvertedButton
               text="Товар"
               onClick={() => setPostType("product")}
+              className="w-full sm:w-auto"
             />
           )}
         </div>
 
         {/* Форма добавления/редактирования публикации */}
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
           {/* Название */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
               Введите название {postType === "service" ? "услуги" : "товара"}
             </label>
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-2">
               Например: {getPlaceholderText()}
             </p>
             <input
@@ -193,16 +157,16 @@ const AddPost = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={getPlaceholderText()}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           {/* Описание */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
               Введите описание
             </label>
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-2">
               Например: {getPlaceholderText()}
             </p>
             <textarea
@@ -210,16 +174,16 @@ const AddPost = () => {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Опишите детали..."
               rows={4}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             />
           </div>
 
           {/* Услуга для обмена */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
               Выберите {postType === "service" ? "услугу" : "товар"} для обмена
             </label>
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-2">
               Например: {getPlaceholderText()}
             </p>
             <input
@@ -227,16 +191,16 @@ const AddPost = () => {
               value={exchangeFor}
               onChange={(e) => setExchangeFor(e.target.value)}
               placeholder={getPlaceholderText()}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           {/* Прикрепление фотографий */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
               Прикрепите фотографии (не более пяти)
             </label>
-            <p className="text-sm text-gray-500 mb-2">Прикрепить файл</p>
+            <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-2">Прикрепить файл</p>
 
             {/* Скрытый input для выбора файлов */}
             <input
@@ -251,41 +215,21 @@ const AddPost = () => {
             {/* Кнопка добавления фото */}
             <ServiceButton
               onClick={handleAddPhotoClick}
-              className="mb-4"
-              disabled={existingImages.length + photos.length >= 5}
+              className="mb-4 w-full sm:w-auto"
+              disabled={photos.length >= 5}
             >
               Прикрепить файл
             </ServiceButton>
 
             {/* Галерея прикрепленных фото */}
-            {(existingImages.length > 0 || photos.length > 0) && (
+            {photos.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-4">
-                {/* Существующие изображения */}
-                {existingImages.map((image, index) => (
-                  <div key={`existing-${index}`} className="relative">
-                    <img
-                      src={image.image}
-                      alt={`Существующее изображение ${index + 1}`}
-                      className="w-[76px] h-[76px] object-cover rounded"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveExistingImage(index)}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
-                      title="Удалить изображение"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-
-                {/* Новые загруженные фото */}
                 {photos.map((photo, index) => (
                   <div key={index} className="relative">
                     <img
                       src={URL.createObjectURL(photo)}
                       alt={`Прикрепленное фото ${index + 1}`}
-                      className="w-[76px] h-[76px] object-cover rounded"
+                      className="w-16 h-16 sm:w-[76px] sm:h-[76px] object-cover rounded"
                       onLoad={() => {
                         URL.revokeObjectURL(URL.createObjectURL(photo));
                       }}
@@ -293,7 +237,7 @@ const AddPost = () => {
                     <button
                       type="button"
                       onClick={() => handleRemovePhoto(index)}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+                      className="absolute -top-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
                     >
                       ×
                     </button>
@@ -301,18 +245,14 @@ const AddPost = () => {
                 ))}
               </div>
             )}
-
-            <p className="text-sm text-gray-500 mt-2">
-              Загружено: {existingImages.length + photos.length}/5
-            </p>
           </div>
 
           {/* Кнопка публикации/обновления */}
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4 sm:pt-0">
             <InvertedButton
               text={isEditMode ? "Обновить" : "Опубликовать"}
               onClick={handlePublish}
-              className="px-8 py-2"
+              className="px-6 sm:px-8 py-2 w-full sm:w-auto"
             />
           </div>
         </div>
