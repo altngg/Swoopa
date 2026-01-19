@@ -22,12 +22,11 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
   const navigate = useNavigate();
   const publicationAuthor = selectedChat.chat.publication.author_username;
   const chatAuthor = selectedChat.chat.author_username;
-  const dialogUserName =
-    userName === publicationAuthor ? chatAuthor : publicationAuthor;
-  const dialogueUserAvatar =
-    userName === publicationAuthor
-      ? selectedChat.chat.author_profile_picture
-      : selectedChat.chat.publication.author_profile_picture;
+  const isCurrentUser = userName === publicationAuthor;
+  const dialogUserName = isCurrentUser ? chatAuthor : publicationAuthor;
+  const dialogueUserAvatar = isCurrentUser
+    ? selectedChat.chat.author_profile_picture
+    : selectedChat.chat.publication.author_profile_picture;
 
   const [messages, setMessages] = useState(selectedChat.messages);
   const messagesEndRef = useRef<HTMLDivElement>(null);

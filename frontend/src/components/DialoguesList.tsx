@@ -27,12 +27,11 @@ function DialoguesList({
         {dialogs.map((dialog, index) => {
           const publicationAuthor = dialog.chat.publication.author_username;
           const chatAuthor = dialog.chat.author_username;
-          const dialogUserName =
-            userName === publicationAuthor ? chatAuthor : publicationAuthor;
-          const dialogueUserAvatar =
-            userName === publicationAuthor
-              ? dialog.chat.author_profile_picture
-              : dialog.chat.publication.author_profile_picture;
+          const isCurrentUser = userName === publicationAuthor;
+          const dialogUserName = isCurrentUser ? chatAuthor : publicationAuthor;
+          const dialogueUserAvatar = isCurrentUser
+            ? dialog.chat.author_profile_picture
+            : dialog.chat.publication.author_profile_picture;
 
           const dateCreated = new Date(dialog.chat.created_at);
           const publicationName = dialog.chat.publication.name;
