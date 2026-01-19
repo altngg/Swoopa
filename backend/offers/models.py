@@ -1,11 +1,7 @@
 from django.db import models
 
-from django.db import models
-from django.utils.text import slugify
-
 from chats.models import Chat
 from main.models import Publication
-from users.models import User
 
 class OfferStatus(models.Model):
     name = models.CharField(max_length=10)

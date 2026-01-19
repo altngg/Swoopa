@@ -31,6 +31,14 @@ function DialoguesList({
             userName === publicationAuthor ? chatAuthor : publicationAuthor;
 
           const dateCreated = new Date(dialog.chat.created_at);
+          const publicationName = dialog.chat.publication.name;
+          const publicationPrice = dialog.chat.publication.price;
+          
+          // Проверяем, является ли публикация бесплатной
+          const isFreePublication = 
+            publicationPrice === "0" ||
+            publicationPrice.toLowerCase().includes("бесплатно") ||
+            publicationPrice.toLowerCase() === "free";
 
           return (
             <div
@@ -46,54 +54,31 @@ function DialoguesList({
                 {/* <Avatar icon={<UserOutlined />} className="bg-gray-300" /> commented cause i don't wanna deal with imgs yet */}
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">
-                    <h3 className="font-medium text-gray-900 truncate">
-                      {dialogUserName}
-                    </h3>
+                    <div className="flex flex-col">
+                      <h3 className="font-medium text-gray-900 truncate">
+                        {dialogUserName}
+                      </h3>
+                      {/* Название публикации */}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs font-medium text-gray-700 truncate">
+                          {publicationName}
+                        </span>
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${
+                          isFreePublication 
+                            ? "bg-green-100 text-green-800" 
+                            : "bg-blue-100 text-blue-800"
+                        }`}>
+                          {isFreePublication ? "Даром" : "Обмен"}
+                        </span>
+                      </div>
+                    </div>
                     <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                       {dateCreated.toLocaleDateString("ru-RU")}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 truncate mt-1">
-                    {dialog.messages[0]?.text}
+                  <p className="text-sm text-gray-600 truncate mt-2">
+                    {dialog.messages[0]?.text || "Нет сообщений"}
                   </p>
-
-                  {/* Информация о предложении, если есть */}
-                  {/* {dialog.offerType && (
-                  <div className="mt-1 flex items-center gap-2">
-                    <span
-                      className={`text-xs px-1.5 py-0.5 rounded ${
-                        dialog.offerType === "exchange"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {dialog.offerType === "exchange" ? "Обмен" : "Даром"}
-                    </span>
-                    {dialog.status && (
-                      <span
-                        className={`text-xs px-1.5 py-0.5 rounded ${
-                          dialog.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : dialog.status === "accepted"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {dialog.status === "pending"
-                          ? "Ожидает"
-                          : dialog.status === "accepted"
-                          ? "Принято"
-                          : "Отклонено"}
-                      </span>
-                    )}
-                  </div>
-                )} */}
-
-                  {/* {dialog.unreadCount && dialog.unreadCount > 0 && (
-                  <div className="inline-flex items-center justify-center min-w-5 h-5 px-1 mt-1 text-xs font-medium text-white bg-red-500 rounded-full">
-                    {dialog.unreadCount}
-                  </div>
-                )} */}
                 </div>
               </div>
             </div>

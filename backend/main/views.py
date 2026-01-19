@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from users.models import User
-from .models import Publication, Favorite, Status
+from .models import Publication, Favorite, Status, PublicationImage
 from .serializer import PublicationSerializer
 
 
@@ -56,7 +56,7 @@ def get_my_publications(request):
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def create_publication(request):
-    data = request.data.copy()
+    data = request.data
     
     if 'author' in data:
         data.pop('author')
@@ -85,7 +85,7 @@ def edit_publication(request, slug):
             status=status.HTTP_404_NOT_FOUND
         )
     
-    if (publication.author_id != request.user.id):
+    if publication.author_id != request.user.id:
         return Response(
             {"error": "You can not edit this publication. Loser."},
             status=status.HTTP_403_FORBIDDEN
@@ -97,9 +97,10 @@ def edit_publication(request, slug):
     
     elif request.method in ['PUT', 'PATCH']:
         partial = request.method == 'PATCH'
-        
-        data = request.data.copy()
-        additional_images = request.FILES.getlist('additional_images')
+
+        data = request.data
+
+        additional_images = request.FILES.getlist('additional_images')        
         if additional_images:
             data.setlist('additional_images', additional_images)
         

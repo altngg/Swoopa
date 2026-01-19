@@ -139,8 +139,7 @@ const Feed = () => {
                     title={pub.name}
                     exchangeItem={pub.price}
                     slug={pub.slug}
-                    isFree={parseFloat(pub.price) === 0}
-                    mainImage={pub.main_image}
+                    isFree={parseFloat(pub.price) === 0 || !pub.price}
                     images={firstImage}
                   />
                 );

@@ -10,7 +10,6 @@ interface ItemCardProps {
   exchangeItem: string;
   slug: string;
   isFree?: boolean;
-  mainImage?: string | null;
   images?: string; // Оставляем как string, так как теперь передаем строку
 }
 
@@ -20,7 +19,6 @@ function ItemCard({
   exchangeItem = "предмет обмена",
   slug,
   isFree,
-  mainImage,
   images,
 }: ItemCardProps) {
   const navigate = useNavigate();
@@ -83,8 +81,7 @@ function ItemCard({
     return `http://localhost:8000${path}`;
   };
 
-  // Используем mainImage как основной, а если его нет - используем images
-  const imageUrl = getImageUrl(mainImage || images);
+  const imageUrl = getImageUrl(images);
 
   return (
     <div

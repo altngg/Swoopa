@@ -1,35 +1,32 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
+import type { Publication } from "../api/publicationsApi";
 
 interface ListingCardProps {
-  title?: string;
-  exchangeItem?: string;
-  userName?: string;
-  isFree?: boolean;
+  item: Publication;
   onOpenChat?: () => void;
   onRemove?: () => void;
   onEdit?: () => void;
   mode?: "favorites" | "user-account";
-  mainImage?: string | null;
 }
 
 function ListingCard({
-  title = "title",
-  exchangeItem = "exchangeItem",
-  userName = "Имя пользователя",
-  isFree = false,
+  item,
   onOpenChat,
   onRemove,
   onEdit,
   mode = "favorites",
-  mainImage,
 }: ListingCardProps) {
   const navigate = useNavigate();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const title = item.name;
+  const exchangeItem = item.price;
+  const isFree = item.price === "0" || !item.price;
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    navigate(`/item/${item.slug}`);
   };
 
   const handleOpenChatClick = (e: React.MouseEvent) => {
@@ -60,7 +57,11 @@ function ListingCard({
 
   const handleUserNameClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate("/profile");
+    if (item.author_id) {
+      navigate(`/users/${item.author_id}`);
+    } else {
+      console.error("Вы уже в профиле пользователя.");
+    }
   };
 
   return (
@@ -71,9 +72,9 @@ function ListingCard({
       >
         {/* Картинка 164x164px */}
         <div className="flex-shrink-0 w-[10.25rem] h-[10.25rem] rounded overflow-hidden bg-gray-200">
-          {mainImage ? (
+          {item.images.length > 0 ? (
             <img
-              src={`http://localhost:8000${mainImage}`}
+              src={`http://localhost:8000${item.images[0].image}`}
               alt={title}
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -100,7 +101,7 @@ function ListingCard({
                 onClick={handleUserNameClick}
                 className="text-sm text-gray-400 mt-1 hover:text-gray-600 transition-colors"
               >
-                {userName}
+                {item.author_username}
               </button>
             </div>
             <button

@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ServiceButtonProps {
-  children?: string;
+  children?: React.ReactNode;
   onClick?: () => void;
   className?: string;
   rounded?: "sm" | "md" | "lg" | "xl" | "2xl" | "full";

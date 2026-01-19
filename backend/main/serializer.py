@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Publication, PublicationImage, PublicationType
-from django.utils.text import slugify
 
 class PublicationImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,19 +14,23 @@ class PublicationSerializer(serializers.ModelSerializer):
     publication_type_name = serializers.CharField(source='publication_type.name', read_only=True)
     publication_type_slug = serializers.CharField(write_only=True)
 
-    main_image = serializers.ImageField(required=False, allow_null=True)
     additional_images = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True,
         required=False
+    )
+    images_to_delete_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False,
+        write_only=True
     )
     images = PublicationImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Publication
         fields = [
-            'id', 'name', 'slug', 'price', 'description', 
-            'main_image', 'publication_type_name', 'status_name',
+            'id', 'name', 'slug', 'price', 'description',
+            'publication_type_name', 'status_name', 'images_to_delete_ids',
             'author_username', 'author_id', 'created_at',
             'images', 'additional_images', 'status', 'publication_type_slug'
         ]
@@ -40,9 +43,6 @@ class PublicationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         publication_type_slug = validated_data.pop('publication_type_slug', None)
         additional_images = validated_data.pop('additional_images', [])
-        
-        if 'name' in validated_data:
-            validated_data['slug'] = slugify(validated_data['name'])
         
         if publication_type_slug:
             try:
@@ -63,9 +63,13 @@ class PublicationSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         publication_type_slug = validated_data.pop('publication_type_slug', None)
         additional_images = validated_data.pop('additional_images', None)
-        
-        if 'name' in validated_data:
-            validated_data['slug'] = slugify(validated_data['name'])
+        images_to_delete_ids = validated_data.pop('images_to_delete_ids', [])
+
+        if images_to_delete_ids:
+            PublicationImage.objects.filter(
+                id__in=images_to_delete_ids,
+                publication=instance
+            ).delete()
         
         if publication_type_slug:
             try:

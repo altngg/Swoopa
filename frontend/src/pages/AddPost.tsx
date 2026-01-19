@@ -5,6 +5,11 @@ import ServiceButton from "../components/ButtonFilled";
 import InvertedButton from "../components/ButtonOutline";
 import { publicationsApi } from "../api/publicationsApi";
 
+interface ExistingImage {
+  id: number;
+  image: string;
+}
+
 const AddPost = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -13,7 +18,11 @@ const AddPost = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [exchangeFor, setExchangeFor] = useState("");
+
   const [photos, setPhotos] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
+  const [imagesToDelete, setImagesToDelete] = useState<ExistingImage[]>([]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Загружаем данные для редактирования, если они есть
@@ -23,9 +32,23 @@ const AddPost = () => {
       const adData = location.state.adData;
       setTitle(adData.title || "");
       setExchangeFor(adData.exchangeItem || "");
-      // Здесь можно загрузить дополнительные данные, если они есть
-      // setDescription(adData.description || '');
-      // setPostType(adData.type || 'service');
+      setDescription(adData.description || "");
+      setPostType(adData.publication_type_name || "service");
+
+      const images: ExistingImage[] = [];
+
+      if (adData.images) {
+        adData.images.forEach((image: any) => {
+          if (image.image) {
+            images.push({
+              id: image.id,
+              image: `http://localhost:8000${image.image}`,
+            });
+          }
+        });
+      }
+
+      setExistingImages(images);
     }
   }, [location.state]);
 
@@ -43,11 +66,15 @@ const AddPost = () => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const newFiles = Array.from(files);
+      const totalFiles =
+        existingImages.length + photos.length + newFiles.length;
 
-      const totalFiles = photos.length + newFiles.length;
       if (totalFiles > 5) {
         alert("Можно загрузить не более 5 фотографий");
-        const filesToAdd = newFiles.slice(0, 5 - photos.length);
+        const filesToAdd = newFiles.slice(
+          0,
+          5 - (existingImages.length + photos.length)
+        );
         setPhotos([...photos, ...filesToAdd]);
       } else {
         setPhotos([...photos, ...newFiles]);
@@ -63,24 +90,40 @@ const AddPost = () => {
     setPhotos(newPhotos);
   };
 
-  const handlePublish = () => {
+  const handleRemoveExistingImage = (index: number) => {
+    const imageToRemove = existingImages[index];
+
+    if (imageToRemove.id) {
+      setImagesToDelete((prev) => [...prev, imageToRemove]);
+    }
+
+    const newExistingImages = [...existingImages];
+    newExistingImages.splice(index, 1);
+    setExistingImages(newExistingImages);
+  };
+
+  const handlePublish = async () => {
     const data = {
       name: title,
       price: exchangeFor,
       description,
       publication_type_slug: postType,
       status: 1, // по хорошему сделать статус по slug/sysname
-      publication_images: photos.map((photo) => photo.name),
+      additional_images: photos,
+      images_to_delete_ids: imagesToDelete.map((item) => item.id),
     };
 
     console.log(isEditMode ? "Редактирование:" : "Публикация:", data);
 
-    if (isEditMode) {
-      publicationsApi.updatePublication("godheavens", data); // ВОТ ТУТ СЛАГ
-      alert("Объявление обновлено!");
-    } else {
-      publicationsApi.createPublication(data);
-      alert("Объявление опубликовано!");
+    try {
+      await (isEditMode
+        ? publicationsApi.updatePublication(location.state?.adData?.slug, data)
+        : publicationsApi.createPublication(data));
+
+      alert(`Объявление ${isEditMode ? "обновлено" : "опубликовано"}!`);
+    } catch (error) {
+      console.log(error);
+      alert(`Ошибка при ${isEditMode ? "обновлении" : "создании"} публикации.`);
     }
 
     navigate("/user-account");
@@ -209,14 +252,34 @@ const AddPost = () => {
             <ServiceButton
               onClick={handleAddPhotoClick}
               className="mb-4"
-              disabled={photos.length >= 5}
+              disabled={existingImages.length + photos.length >= 5}
             >
               Прикрепить файл
             </ServiceButton>
 
             {/* Галерея прикрепленных фото */}
-            {photos.length > 0 && (
+            {(existingImages.length > 0 || photos.length > 0) && (
               <div className="flex flex-wrap gap-2 mt-4">
+                {/* Существующие изображения */}
+                {existingImages.map((image, index) => (
+                  <div key={`existing-${index}`} className="relative">
+                    <img
+                      src={image.image}
+                      alt={`Существующее изображение ${index + 1}`}
+                      className="w-[76px] h-[76px] object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveExistingImage(index)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+                      title="Удалить изображение"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+
+                {/* Новые загруженные фото */}
                 {photos.map((photo, index) => (
                   <div key={index} className="relative">
                     <img
@@ -238,6 +301,10 @@ const AddPost = () => {
                 ))}
               </div>
             )}
+
+            <p className="text-sm text-gray-500 mt-2">
+              Загружено: {existingImages.length + photos.length}/5
+            </p>
           </div>
 
           {/* Кнопка публикации/обновления */}
