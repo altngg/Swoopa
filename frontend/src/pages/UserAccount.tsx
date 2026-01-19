@@ -440,22 +440,31 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900 pl-[2rem]">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900 pl-2 sm:pl-[2rem]">
         Личный кабинет
       </h1>
 
-      <div className="flex gap-6">
-        <div className="w-64 flex-shrink-0 bg-white rounded-lg shadow-sm p-6">
-          <div className="flex flex-col items-center mb-6">
-            <Avatar
-              size={142}
-              icon={!userAvatar && <UserOutlined />}
-              src={userAvatar}
-              className="bg-gray-300 mb-4"
-            />
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+        <div className="w-full lg:w-64 flex-shrink-0 bg-white rounded-lg shadow-sm p-4 sm:p-6">
+          <div className="flex flex-col items-center mb-4 sm:mb-6">
+            <div className="flex flex-col items-center mb-4 sm:mb-8">
+    <Avatar
+        size={{
+            xs: 80,
+            sm: 100,
+            md: 120,
+            lg: 142,
+            xl: 142,
+            xxl: 142,
+        }}
+        icon={!userAvatar ? <UserOutlined /> : null}
+        src={userAvatar}
+        className="bg-gray-300 mb-3 sm:mb-4"
+    />
+    </div>
 
-            <div className="mt-2 mb-4">
+            <div className="mt-2 mb-3 sm:mb-4">
               <input
                 type="file"
                 accept="image/*"
@@ -469,7 +478,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
               />
               <label
                 htmlFor="avatar-upload"
-                className="text-blue-600 text-sm cursor-pointer hover:text-blue-800"
+                className="text-blue-600 text-xs sm:text-sm cursor-pointer hover:text-blue-800"
               >
                 Изменить фото
               </label>
@@ -484,7 +493,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                     onPressEnter={handleNameSave}
                     onBlur={handleNameSave}
                     autoFocus
-                    className="flex-1"
+                    className="flex-1 text-sm sm:text-base"
                   />
                   <Button type="primary" size="small" onClick={handleNameSave}>
                     OK
@@ -492,7 +501,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                 </div>
               ) : (
                 <>
-                  <span className="text-lg font-semibold text-gray-900">
+                  <span className="text-base sm:text-lg font-semibold text-gray-900 truncate max-w-[120px] sm:max-w-none">
                     {userName}
                   </span>
                   <Button
@@ -506,7 +515,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
               )}
             </div>
 
-            <div className="flex items-center justify-center gap-2 mb-8 w-full">
+            <div className="flex items-center justify-center gap-2 mb-4 sm:mb-8 w-full">
               {isEditingCity ? (
                 <div className="flex items-center gap-2 w-full">
                   <Select
@@ -520,6 +529,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                         .toLowerCase()
                         .indexOf(input.toLowerCase()) >= 0
                     }
+                    className="text-sm sm:text-base"
                   >
                     {locations.map((location) => (
                       <Option key={location.id} value={location.city}>
@@ -533,7 +543,9 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                 </div>
               ) : (
                 <>
-                  <span className="text-gray-600">{userCity}</span>
+                  <span className="text-gray-600 text-sm sm:text-base truncate max-w-[100px] sm:max-w-none">
+                    {userCity}
+                  </span>
                   <Button
                     type="text"
                     icon={<EditOutlined />}
@@ -547,7 +559,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
 
             <div className="w-full space-y-1">
               <button
-                className={`w-full text-left h-10 px-3 py-2 flex items-center justify-start rounded transition-colors ${
+                className={`w-full text-left h-8 sm:h-10 px-2 sm:px-3 py-1 sm:py-2 flex items-center justify-start rounded transition-colors text-sm sm:text-base ${
                   activeTab === "messages"
                     ? "bg-blue-50 text-blue-600 font-medium"
                     : "text-gray-700 hover:bg-gray-100"
@@ -558,7 +570,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
               </button>
 
               <button
-                className={`w-full text-left h-10 px-3 py-2 flex items-center justify-start rounded transition-colors ${
+                className={`w-full text-left h-8 sm:h-10 px-2 sm:px-3 py-1 sm:py-2 flex items-center justify-start rounded transition-colors text-sm sm:text-base ${
                   activeTab === "ads"
                     ? "bg-blue-50 text-blue-600 font-medium"
                     : "text-gray-700 hover:bg-gray-100"
@@ -568,12 +580,12 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                 Мои объявления
               </button>
 
-              <div className="h-px bg-gray-200 my-2"></div>
+              <div className="h-px bg-gray-200 my-1 sm:my-2"></div>
 
               <Button
                 type="text"
                 block
-                className="text-left h-10 flex items-center justify-start text-gray-600 hover:text-gray-800"
+                className="text-left h-8 sm:h-10 flex items-center justify-start text-gray-600 hover:text-gray-800 text-sm sm:text-base"
                 icon={<LogoutOutlined />}
                 onClick={() => setShowLogoutConfirm(true)}
               >
@@ -584,7 +596,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                 type="text"
                 danger
                 block
-                className="text-left h-10 flex items-center justify-start hover:text-red-700"
+                className="text-left h-8 sm:h-10 flex items-center justify-start hover:text-red-700 text-sm sm:text-base"
                 icon={<DeleteOutlined />}
                 onClick={() => setShowDeleteConfirm(true)}
               >
@@ -597,20 +609,20 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
         <div className="flex-1">
           {activeTab === "ads" && (
             <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                   Мои объявления
                 </h2>
                 <button
                   onClick={() => navigate("/add-post")}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm sm:text-base w-full sm:w-auto"
                 >
                   + Добавить объявление
                 </button>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {userAds.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
                     У вас пока нет объявлений
                   </div>
                 ) : (
@@ -630,34 +642,34 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
 
           {activeTab === "offers" && (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
                 Входящие предложения
               </h2>
 
               {incomingOffers.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
                   У вас пока нет новых предложений
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {incomingOffers.map((offer) => (
                     <div
                       key={offer.id}
-                      className="bg-white rounded-lg border border-gray-200 p-4"
+                      className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4"
                     >
-                      <div className="flex justify-between items-start mb-3">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 sm:mb-3 gap-1 sm:gap-0">
                         <div>
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                             Предложение от {offer.fromUserName}
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-xs sm:text-sm text-gray-600">
                             {offer.offerType === "exchange"
                               ? `Предлагает обмен на: ${offer.selectedItemTitle}`
                               : "Хочет забрать даром"}
                           </p>
                         </div>
                         <span
-                          className={`px-2 py-1 text-xs rounded ${
+                          className={`px-2 py-1 text-xs rounded self-start sm:self-auto ${
                             offer.status === "pending"
                               ? "bg-yellow-100 text-yellow-800"
                               : offer.status === "accepted"
@@ -673,26 +685,27 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                         </span>
                       </div>
 
-                      <div className="mb-4">
-                        <p className="text-gray-700 mb-2">
+                      <div className="mb-3 sm:mb-4">
+                        <p className="text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base">
                           <span className="font-medium">Ваш товар:</span>{" "}
                           {offer.itemTitle}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-xs sm:text-sm text-gray-600">
                           Предложение получено:{" "}
                           {new Date(offer.createdAt).toLocaleString("ru-RU")}
                         </p>
                       </div>
 
                       {offer.status === "pending" && (
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-1 sm:gap-2">
                           <Button
                             type="primary"
                             icon={<CheckOutlined />}
                             onClick={() =>
                               handleOfferResponse(offer.id, "accepted")
                             }
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm"
+                            size="small"
                           >
                             Принять
                           </Button>
@@ -702,6 +715,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                             onClick={() =>
                               handleOfferResponse(offer.id, "rejected")
                             }
+                            size="small"
+                            className="text-xs sm:text-sm"
                           >
                             Отклонить
                           </Button>
@@ -709,6 +724,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                             onClick={() => {
                               navigateToTab("messages");
                             }}
+                            size="small"
+                            className="text-xs sm:text-sm"
                           >
                             Написать
                           </Button>
@@ -722,8 +739,8 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
           )}
 
           {activeTab === "messages" && (
-            <div className="flex gap-6 h-[calc(100vh-180px)] min-h-[700px]">
-              <div className="w-96">
+            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 h-[calc(100vh-140px)] sm:h-[calc(100vh-180px)] min-h-[500px] sm:min-h-[700px]">
+              <div className="w-full lg:w-96">
                 <DialoguesList
                   dialogs={chats}
                   onDialogClick={handleDialogClick}
@@ -731,13 +748,13 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                   userName={userName}
                 />
                 {chatsLoading && (
-                  <div className="text-center py-4">
+                  <div className="text-center py-2 sm:py-4">
                     <Spin size="small" />
                   </div>
                 )}
               </div>
 
-              <div className="flex-1 flex flex-col min-h-[600px]">
+              <div className="flex-1 flex flex-col min-h-[400px] sm:min-h-[600px]">
                 {selectedDialog ? (
                   <DialogueWindow
                     key={selectedDialog.chat.id}
@@ -746,10 +763,10 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                     selectedChat={selectedDialog}
                   />
                 ) : (
-                  <div className="h-full flex items-center justify-center bg-white rounded-lg border border-gray-200 min-h-[600px]">
-                    <div className="text-center text-gray-500">
-                      <p className="text-lg mb-2">Выберите диалог</p>
-                      <p className="text-sm">или начните новый разговор</p>
+                  <div className="h-full flex items-center justify-center bg-white rounded-lg border border-gray-200 min-h-[400px] sm:min-h-[600px]">
+                    <div className="text-center text-gray-500 text-sm sm:text-base">
+                      <p className="text-base sm:text-lg mb-1 sm:mb-2">Выберите диалог</p>
+                      <p className="text-xs sm:text-sm">или начните новый разговор</p>
                     </div>
                   </div>
                 )}

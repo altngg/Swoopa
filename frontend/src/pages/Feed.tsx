@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import ItemCard from "../Сomponents/ItemCard";
+import ItemCard from "../сomponents/ItemCard";
 import SortDropdown from "../components/SortDropdown";
 import { useLocation } from "react-router-dom";
 import { publicationsApi, type Publication } from "../api/publicationsApi";

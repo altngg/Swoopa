@@ -451,8 +451,8 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
 
   if (loading) {
     return (
-      <div className="px-[20rem] py-0">
-        <div className="w-full text-center py-12">
+      <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[20rem] py-0">
+        <div className="w-full text-center py-8 sm:py-12">
           <Spin />
         </div>
       </div>
@@ -461,8 +461,8 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
 
   if (!itemData) {
     return (
-      <div className="px-[20rem] py-0">
-        <div className="w-full text-center py-12">
+      <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[20rem] py-0">
+        <div className="w-full text-center py-8 sm:py-12">
           <p>Товар не найден</p>
         </div>
       </div>
@@ -498,9 +498,9 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
   const button = getButtonContent();
 
   return (
-    <div className="px-[20rem] py-0">
+    <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-[20rem] py-0">
       <div className="w-full">
-        <div className="flex gap-[5rem] mb-12">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-8 lg:gap-[5rem] mb-8 sm:mb-12">
           <div className="flex-1">
             <Gallery
               images={
@@ -516,10 +516,10 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
           <div className="flex-1">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h1 className="font-semibold text-[1.5rem] text-gray-900 mb-2">
+                <h1 className="font-semibold text-lg sm:text-xl lg:text-[1.5rem] text-gray-900 mb-2">
                   {itemData.name}
                 </h1>
-                <p className="text-[1rem] text-gray-600">
+                <p className="text-sm sm:text-base lg:text-[1rem] text-gray-600">
                   {new Date(itemData.created_at).toLocaleDateString("ru-RU", {
                     day: "numeric",
                     month: "long",
@@ -532,28 +532,28 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
                 className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 {isLiked ? (
-                  <HeartFilled className="text-[1.2rem] text-red-500" />
+                  <HeartFilled className="text-[1rem] sm:text-[1.2rem] text-red-500" />
                 ) : (
-                  <HeartOutlined className="text-[1.2rem] text-gray-600 hover:text-red-500" />
+                  <HeartOutlined className="text-[1rem] sm:text-[1.2rem] text-gray-600 hover:text-red-500" />
                 )}
               </button>
             </div>
 
             <div className="mb-4">
-              <p className="text-[1.25rem] text-gray-900 mb-1">
+              <p className="text-base sm:text-lg lg:text-[1.25rem] text-gray-900 mb-1">
                 {isFreeItem ? "Отдам даром" : `Обмен на ${itemData.price}`}
               </p>
-              <p className="text-[1.25rem] text-gray-600">
+              <p className="text-base sm:text-lg lg:text-[1.25rem] text-gray-600">
                 {itemData.author_username}
               </p>
             </div>
 
-            <div className="mt-[3rem] mb-4">
+            <div className="mt-6 sm:mt-8 lg:mt-[3rem] mb-4">
               {button.isExisting ? (
                 <ButtonFilled
                   onClick={handleGoToChat}
                   disabled={button.disabled}
-                  className="bg-blue-400 hover:bg-blue-500 text-white hover:text-black"
+                  className="bg-blue-400 hover:bg-blue-500 text-white hover:text-black w-full sm:w-auto"
                 >
                   <MessageOutlined className="mr-2" />
                   {button.text}
@@ -562,9 +562,9 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
                 <ButtonFilled
                   onClick={handleFreeTakeClick}
                   disabled={button.disabled}
-                  className={
+                  className={`${
                     isCreatingChat ? "bg-blue-400 hover:bg-blue-500" : ""
-                  }
+                  } w-full sm:w-auto`}
                 >
                   {button.text}
                 </ButtonFilled>
@@ -572,9 +572,9 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
                 <ButtonFilled
                   onClick={handleExchangeClick}
                   disabled={button.disabled}
-                  className={
+                  className={`${
                     isCreatingChat ? "bg-blue-400 hover:bg-blue-500" : ""
-                  }
+                  } w-full sm:w-auto`}
                 >
                   {button.text}
                 </ButtonFilled>
@@ -583,9 +583,9 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
           </div>
         </div>
 
-        <div className="border-t border-gray-200 pt-6">
-          <h2 className="text-[1.25rem] text-gray-600 mb-4">Описание</h2>
-          <p className="text-[1.25rem] text-gray-900">{itemData.description}</p>
+        <div className="border-t border-gray-200 pt-4 sm:pt-6">
+          <h2 className="text-base sm:text-lg lg:text-[1.25rem] text-gray-600 mb-2 sm:mb-4">Описание</h2>
+          <p className="text-sm sm:text-base lg:text-[1.25rem] text-gray-900">{itemData.description}</p>
         </div>
       </div>
     </div>
