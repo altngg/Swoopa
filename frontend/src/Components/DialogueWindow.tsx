@@ -10,18 +10,24 @@ interface DialogueWindowProps {
   onClose: () => void;
   selectedChat: Chat;
   userName: string;
+  userAvatar?: string | null;
 }
 
 const DialogueWindow: React.FC<DialogueWindowProps> = ({
   onClose,
   selectedChat,
   userName,
+  userAvatar,
 }) => {
   const navigate = useNavigate();
   const publicationAuthor = selectedChat.chat.publication.author_username;
   const chatAuthor = selectedChat.chat.author_username;
   const dialogUserName =
     userName === publicationAuthor ? chatAuthor : publicationAuthor;
+  const dialogueUserAvatar =
+    userName === publicationAuthor
+      ? selectedChat.chat.author_profile_picture
+      : selectedChat.chat.publication.author_profile_picture;
 
   const [messages, setMessages] = useState(selectedChat.messages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -43,7 +49,8 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
   const handlePublicationClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    const publicationSlug = selectedChat.chat.publication.slug || selectedChat.chat.publication.id;
+    const publicationSlug =
+      selectedChat.chat.publication.slug || selectedChat.chat.publication.id;
     navigate(`/item/${publicationSlug}`);
   };
 
@@ -52,7 +59,11 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
       {/* Шапка чата */}
       <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-lg">
         <div className="flex items-center gap-3">
-          <Avatar icon={<UserOutlined />} className="bg-gray-300" />
+          <Avatar
+            src={dialogueUserAvatar}
+            icon={<UserOutlined />}
+            className="bg-gray-300"
+          />
           <div>
             <div className="text-sm font-medium text-gray-900">
               {dialogUserName}
@@ -77,12 +88,12 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
       </div>
 
       {/* Область сообщений с прокруткой */}
-      <div 
+      <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto p-4"
-        style={{ 
+        style={{
           minHeight: "400px",
-          maxHeight: "calc(100vh - 220px)"
+          maxHeight: "calc(100vh - 220px)",
         }}
       >
         <div className="space-y-4">
@@ -105,6 +116,7 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
                 isCurrentUser={isCurrentUser}
                 time={timeCreated}
                 userName={isCurrentUser ? "Вы" : dialogUserName}
+                userAvatar={userAvatar}
               />
             );
           })}

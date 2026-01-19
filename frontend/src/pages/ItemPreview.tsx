@@ -168,6 +168,18 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
     }
   };
 
+  const handleUserClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (itemData && itemData.author_id) {
+      navigate(`/users/${itemData.author_id}`);
+    } else {
+      console.error("❌ Нет данных для перехода на профиль");
+      message.info("Просмотр профиля временно недоступен");
+    }
+  };
+
   // Найти существующий чат для этой публикации
   const findExistingChatForPublication = () => {
     if (!itemData || existingChats.length === 0) return null;
@@ -543,7 +555,11 @@ const ItemPreview: React.FC<{ isFree?: boolean }> = ({ isFree = false }) => {
               <p className="text-[1.25rem] text-gray-900 mb-1">
                 {isFreeItem ? "Отдам даром" : `Обмен на ${itemData.price}`}
               </p>
-              <p className="text-[1.25rem] text-gray-600">
+              <p
+                className="text-[1.25rem] text-gray-600 hover:cursor-pointer hover:text-blue-600 transition-colors"
+                onClick={handleUserClick}
+                style={{ cursor: "pointer" }}
+              >
                 {itemData.author_username}
               </p>
             </div>

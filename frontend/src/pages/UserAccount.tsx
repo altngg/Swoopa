@@ -58,7 +58,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { chatId: urlChatId } = useParams<{ chatId?: string }>();
-  
+
   const [activeTab, setActiveTab] = useState<"ads" | "messages" | "offers">(
     initialTab
   );
@@ -96,7 +96,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
     // Определяем активную вкладку на основе URL
     if (location.pathname.includes("/messages")) {
       setActiveTab("messages");
-      
+
       // Загружаем чаты
       loadChats().then((loadedChats) => {
         // Если в URL есть chatId, открываем этот чат
@@ -116,13 +116,13 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   // Функция для открытия чата по ID из URL - ТЕПЕРЬ ЗАГРУЖАЕТ ВСЕ СООБЩЕНИЯ
   const openChatById = async (chatId: number, loadedChats: Chat[]) => {
     console.log("🟡 Открываем чат из URL, ID:", chatId);
-    
+
     // 1. Пробуем найти в загруженных чатах
-    let chatToOpen = loadedChats.find(c => c.chat.id === chatId);
-    
+    let chatToOpen = loadedChats.find((c) => c.chat.id === chatId);
+
     if (chatToOpen) {
       console.log("✅ Чат найден в списке, но может быть неполным");
-      
+
       // ЗАГРУЖАЕМ ПОЛНЫЕ ДАННЫЕ ЧАТА С ВСЕМИ СООБЩЕНИЯМИ
       try {
         console.log("🟡 Загружаем полную историю сообщений...");
@@ -130,14 +130,19 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
           chatToOpen.chat.publication.id,
           chatToOpen.chat.author_username
         );
-        console.log("✅ Полная история загружена, сообщений:", fullChat.messages.length);
-        
+        console.log(
+          "✅ Полная история загружена, сообщений:",
+          fullChat.messages.length
+        );
+
         setSelectedDialog(fullChat);
-        
+
         // Обновляем чат в списке с полными данными
-        setChats(prev => prev.map(chat => 
-          chat.chat.id === fullChat.chat.id ? fullChat : chat
-        ));
+        setChats((prev) =>
+          prev.map((chat) =>
+            chat.chat.id === fullChat.chat.id ? fullChat : chat
+          )
+        );
       } catch (error) {
         console.error("❌ Ошибка при загрузке полной истории:", error);
         // Если не удалось загрузить полные данные, используем что есть
@@ -145,28 +150,32 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
       }
       return;
     }
-    
+
     // 2. Если не нашли в списке, пробуем найти информацию в localStorage
     console.log("🟡 Чат не найден в списке, ищем информацию...");
-    
+
     const chatInfo = localStorage.getItem(`chat_info_${chatId}`);
     if (chatInfo) {
       try {
         const { publicationId, authorUsername } = JSON.parse(chatInfo);
-        console.log("🟡 Загружаем чат по публикации:", publicationId, authorUsername);
-        
+        console.log(
+          "🟡 Загружаем чат по публикации:",
+          publicationId,
+          authorUsername
+        );
+
         const directChat = await chatsApi.getChatByPublicationId(
           publicationId,
           authorUsername
         );
-        
+
         if (directChat.chat.id === chatId) {
           console.log("✅ Чат загружен напрямую с полной историей");
           setSelectedDialog(directChat);
-          
+
           // Добавляем в список чатов, если его там нет
-          if (!loadedChats.some(c => c.chat.id === directChat.chat.id)) {
-            setChats(prev => [...prev, directChat]);
+          if (!loadedChats.some((c) => c.chat.id === directChat.chat.id)) {
+            setChats((prev) => [...prev, directChat]);
           }
         }
       } catch (error) {
@@ -347,25 +356,28 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
   const handleDialogClick = async (chat: Chat) => {
     // Меняем URL при клике на чат
     navigate(`/user-account/messages/${chat.chat.id}`);
-    
+
     // Сохраняем информацию о чате в localStorage для будущих загрузок
-    localStorage.setItem(`chat_info_${chat.chat.id}`, JSON.stringify({
-      publicationId: chat.chat.publication.id,
-      authorUsername: chat.chat.author_username,
-      timestamp: new Date().toISOString()
-    }));
-    
+    localStorage.setItem(
+      `chat_info_${chat.chat.id}`,
+      JSON.stringify({
+        publicationId: chat.chat.publication.id,
+        authorUsername: chat.chat.author_username,
+        timestamp: new Date().toISOString(),
+      })
+    );
+
     // Загружаем полные данные чата с ВСЕМИ сообщениями
     const fullChat = await chatsApi.getChatByPublicationId(
       chat.chat.publication.id,
       chat.chat.author_username
     );
     setSelectedDialog(fullChat);
-    
+
     // Обновляем чат в списке с полными данными
-    setChats(prev => prev.map(c => 
-      c.chat.id === fullChat.chat.id ? fullChat : c
-    ));
+    setChats((prev) =>
+      prev.map((c) => (c.chat.id === fullChat.chat.id ? fullChat : c))
+    );
   };
 
   const handleRemoveAd = async (itemId: number) => {
@@ -743,6 +755,7 @@ const UserAccount: React.FC<UserAccountProps> = ({ initialTab = "ads" }) => {
                     key={selectedDialog.chat.id}
                     onClose={handleCloseChat}
                     userName={userName}
+                    userAvatar={userAvatar}
                     selectedChat={selectedDialog}
                   />
                 ) : (

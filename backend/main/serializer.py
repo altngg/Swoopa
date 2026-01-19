@@ -9,6 +9,7 @@ class PublicationImageSerializer(serializers.ModelSerializer):
         
 class PublicationSerializer(serializers.ModelSerializer):
     author_username = serializers.CharField(source='author.username', read_only=True)
+    author_profile_picture = serializers.ImageField(source='author.profile_picture', read_only=True)
     author_id = serializers.IntegerField(source='author.id', read_only=True)
     status_name = serializers.CharField(source='status.name', read_only=True)
     publication_type_name = serializers.CharField(source='publication_type.name', read_only=True)
@@ -31,7 +32,7 @@ class PublicationSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'slug', 'price', 'description',
             'publication_type_name', 'status_name', 'images_to_delete_ids',
-            'author_username', 'author_id', 'created_at',
+            'author_username', 'author_id', 'created_at', 'author_profile_picture',
             'images', 'additional_images', 'status', 'publication_type_slug'
         ]
         extra_kwargs = {

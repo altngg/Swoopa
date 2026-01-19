@@ -19,16 +19,17 @@ export interface Chat {
       publication_type: number;
       status: number;
       author_username: string;
+      author_profile_picture: string;
       created_at: string;
     };
     created_at: string;
     author_username: string;
+    author_profile_picture: string;
   };
   messages: Message[];
 }
 
 export const chatsApi = {
-
   // Создание нового чата
   createChat: async (
     publicationId: number,
@@ -36,7 +37,7 @@ export const chatsApi = {
   ): Promise<Chat> => {
     const response = await apiClient.post("/chats/create/", {
       publication_id: publicationId,
-      author_username: author_username
+      author_username: author_username,
     });
     return response.data;
   },
@@ -54,7 +55,6 @@ export const chatsApi = {
     return response.data;
   },
 
-
   getChatByPublicationId: async (
     publicationId: number,
     author_username: string
@@ -62,11 +62,11 @@ export const chatsApi = {
     const response = await apiClient.get(
       `/chats/${author_username}/${publicationId}/`
     );
-    
+
     // Добавляем флаг isNew на основе статуса ответа
     const chatData = response.data;
     chatData.isNew = response.status === 201; // 201 = Created, 200 = OK
-    
+
     return chatData;
   },
 
