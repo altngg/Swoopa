@@ -29,13 +29,17 @@ function DialoguesList({
           const chatAuthor = dialog.chat.author_username;
           const dialogUserName =
             userName === publicationAuthor ? chatAuthor : publicationAuthor;
+          const dialogueUserAvatar =
+            userName === publicationAuthor
+              ? dialog.chat.author_profile_picture
+              : dialog.chat.publication.author_profile_picture;
 
           const dateCreated = new Date(dialog.chat.created_at);
           const publicationName = dialog.chat.publication.name;
           const publicationPrice = dialog.chat.publication.price;
-          
+
           // Проверяем, является ли публикация бесплатной
-          const isFreePublication = 
+          const isFreePublication =
             publicationPrice === "0" ||
             publicationPrice.toLowerCase().includes("бесплатно") ||
             publicationPrice.toLowerCase() === "free";
@@ -51,7 +55,11 @@ function DialoguesList({
               }`}
             >
               <div className="flex items-start gap-3">
-                {/* <Avatar icon={<UserOutlined />} className="bg-gray-300" /> commented cause i don't wanna deal with imgs yet */}
+                <Avatar
+                  src={dialogueUserAvatar}
+                  icon={<UserOutlined />}
+                  className="bg-gray-300"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col">
@@ -63,11 +71,13 @@ function DialoguesList({
                         <span className="text-xs font-medium text-gray-700 truncate">
                           {publicationName}
                         </span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded ${
-                          isFreePublication 
-                            ? "bg-green-100 text-green-800" 
-                            : "bg-blue-100 text-blue-800"
-                        }`}>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded ${
+                            isFreePublication
+                              ? "bg-green-100 text-green-800"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
                           {isFreePublication ? "Даром" : "Обмен"}
                         </span>
                       </div>
