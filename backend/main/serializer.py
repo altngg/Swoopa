@@ -46,7 +46,7 @@ class PublicationSerializer(serializers.ModelSerializer):
         additional_images = validated_data.pop('additional_images', [])
         
         if 'name' in validated_data:
-            validated_data['slug'] = slugify(validated_data['name'])
+            validated_data['slug'] = slugify(validated_data['name'], allow_unicode=True)
         
         if publication_type_slug:
             try:
@@ -76,7 +76,7 @@ class PublicationSerializer(serializers.ModelSerializer):
             ).delete()
         
         if 'name' in validated_data:
-            validated_data['slug'] = slugify(validated_data['name'])
+            validated_data['slug'] = slugify(validated_data['name'], allow_unicode=True)
         
         if publication_type_slug:
             try:
