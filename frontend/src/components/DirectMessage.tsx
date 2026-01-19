@@ -7,6 +7,7 @@ interface DirectMessageProps {
   time: string;
   userName: string;
   userAvatar?: string | null;
+  dialogueUserAvatar?: string | null;
 }
 
 function DirectMessage({
@@ -15,6 +16,7 @@ function DirectMessage({
   time,
   userName,
   userAvatar,
+  dialogueUserAvatar,
 }: DirectMessageProps) {
   return (
     <div
@@ -26,6 +28,7 @@ function DirectMessage({
       {!isCurrentUser && (
         <div className="flex-shrink-0">
           <Avatar
+            src={dialogueUserAvatar}
             size="default"
             icon={<UserOutlined />}
             className="bg-gray-300"

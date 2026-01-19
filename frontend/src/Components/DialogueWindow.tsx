@@ -116,6 +116,7 @@ const DialogueWindow: React.FC<DialogueWindowProps> = ({
                 time={timeCreated}
                 userName={isCurrentUser ? "Вы" : dialogUserName}
                 userAvatar={userAvatar}
+                dialogueUserAvatar={dialogueUserAvatar}
               />
             );
           })}
